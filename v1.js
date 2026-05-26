@@ -42,8 +42,6 @@ const Camera = {
 
  
  
-//  colorline :"#f81788",
- 
  
 
 
