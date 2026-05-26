@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>infinity canvas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="short icon" href="power.png" />
+</head>
+<body>
+ 
+ 
+  <div class="navbar">
+     <img id="menu" class="menu-icon" src="./menu.png" alt="loading"/>
+     <h3 class="title">perfect Lines Canvas</h3>
+   
+    <a href="https://github.com/SmoothCanvas" target="_blank">
+    <img  class="github-icon" src="./github.png" alt="loading"/>
+
+    </a>
+  </div>
+
+
+ 
+  <div class="container" id="view">
+    
+     <canvas id="Layer1"  ></canvas>
+
+
+ 
+  </div> 
+ 
+
+
+
+
+
+
+
+
+
+
+<div class="sp-panel" id="panel">
+
+  <div class="sp-section">
+    <div class="sp-section-title">Stroke</div>
+    <div class="sp-row">
+      <span class="sp-label">Size</span>
+      <input type="range" id="size" min="1" max="200" value="8" step="1">
+      <span class="sp-val" id="size-v">8</span>
+    </div>
+ 
+  
+    <div class="sp-row">
+      <span class="sp-label">Smoothing</span>
+      <input type="range" id="smoothing" min="0.001" max="1" value="0.186" step="0.001">
+      <span class="sp-val" id="smoothing-v">0.186</span>
+    </div>
+ 
+  </div>
+
+ 
+  <div class="sp-section">
+    <div class="sp-section-title">Color</div>
+    <div class="sp-swatch-label">Fill</div>
+    <div class="sp-swatch-row" id="fill-swatches"></div>
+ 
+    
+    <div class="sp-swatch-row" id="stroke-swatches">
+   
+    </div>
+  </div>
+
+  <div class="sp-btns">
+    <div class="sp-btn-row">
+      <button class="sp-btn"  >Reset options</button>
+      <button class="sp-btn"  id="clear" >Clear</button>
+    </div>
+    <button class="sp-btn primary"  >Documentation</button>
+  </div>
+
+</div>
+
+
+<div id="percentage">0%</div>
+
+<div id="version">V1.1.0 </div>
+
+<div id="version2">
+ 
+  <a href="https://github.com/devtunis" target="_blank"> © 2026 NahdiGhaith </a>
+
+</div>
+
+
+  <script type="module" src="v1.js"></script>
+    
+</body>
+</html>
