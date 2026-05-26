@@ -1,7 +1,7 @@
 
 import { Colors } from "./Colors.js"
+import { Path } from "./Pathline.js"
 
- 
 const container = document.querySelector(".container")
 const Layer1 = document.querySelector("#Layer1")
 const ctx = Layer1.getContext("2d")
@@ -13,6 +13,10 @@ const range  = document.getElementById("size")
 const Smoothing  = document.getElementById("smoothing")
 const clear  = document.getElementById("clear")
 
+const undo =  document.getElementById("undo")
+const redo =  document.getElementById("redo")
+
+const usingPath = new Path()
 
 let state = {
   draw : false , 
@@ -45,7 +49,8 @@ const Camera = {
 
 let SaveOldest =  {x : 0 , y :0}
 
-container.style.cursor = 'url("./controllers/gg.png") 4 32, auto';
+// container.style.cursor = 'url("./controllers/gg.png") 4 32, auto';
+container.style.cursor = 'crosshair';
 
    
 resetOptions.addEventListener("click",()=>{
@@ -55,7 +60,7 @@ resetOptions.addEventListener("click",()=>{
   document.getElementById("percentage").innerText = `${0}%` 
 
   document.getElementById("size-v").innerHTML = 8
-  document.getElementById("smoothing-v").innerHTML = 0.29
+  document.getElementById("smoothing-v").innerHTML =  0.186
   const slider = document.getElementById("size");
   slider.value = slider.defaultValue;
   const slider2 = document.getElementById("smoothing");
@@ -154,7 +159,7 @@ function redraw(){
         const prev = state.strokes[i-1]
         const curr =  state.strokes[i]
         
-        if(state.strokes[i]==="#")  continue
+        if(state.strokes[i]==="#"  || state.strokes[i]==undefined)  continue
    
             ctx.beginPath();
             ctx.moveTo(prev.x, prev.y);
@@ -224,7 +229,7 @@ container.addEventListener("mousedown",(e)=>{
 
 
     const contSize = e.currentTarget.getBoundingClientRect();
-    const x  =(( clientX-contSize.left)-Camera.x)  /Camera.zoom
+    const x  = (( clientX-contSize.left)-Camera.x)  /Camera.zoom
     const y =  ((clientY-contSize.top)-Camera.y)  /Camera.zoom
    
     state.points.push({x :x , y : y , color : state.colorline , size :  state.sizeLine  })
@@ -236,7 +241,7 @@ container.addEventListener("mousedown",(e)=>{
       
     }else{
       const contSize = e.currentTarget.getBoundingClientRect();
-      const x  =( clientX-contSize.left)
+      const x =  (clientX-contSize.left)
       const y =  (clientY-contSize.top)
       state.cursormode   = true
       SaveOldest.x  = x 
@@ -247,14 +252,16 @@ container.addEventListener("mousedown",(e)=>{
     }
    
 })
+
+
 container.addEventListener("mouseup",(e)=>{
     
      state.draw = false
      state.cursormode = false   
    
   
-     state.strokes.push(...state.points ,"#")
-   
+    
+     state.strokes.push("#",...state.points ,"#")
      state.points = []
      console.log(state.strokes)
  
@@ -270,15 +277,7 @@ observer.observe(container)
 
  
 
-function HandelZoom(zom  , camerax , cameray){
-      
-     
-      ctx.save()
-      ctx.setTransform(1,0,0,1,0,0)
-      ctx.clearRect(0,0,Layer1.width,Layer1.height)
-      ctx.restore()
-      ctx.setTransform(zom,0,0,zom,camerax,cameray)
-}
+ 
  
  
  
@@ -361,7 +360,7 @@ Smoothing.addEventListener("input",(e)=>{
 
 
 clear.addEventListener("click",()=>{
-    state.alpha =  0.186
+  state.alpha =  0.186
   state.colorline = "#000"
   state.sizeLine = 12
 
@@ -384,4 +383,40 @@ clear.addEventListener("click",()=>{
 
 menu.addEventListener("click",()=>{
   document.getElementById("panel").classList.toggle("d-off")
+})
+
+
+// motion event 
+
+
+
+
+undo.addEventListener("click",()=>{
+   usingPath.RemoveLastElement(state.strokes)
+  redraw()
+})
+
+redo.addEventListener("click",()=>{
+    usingPath.AddElement(state.strokes)
+    redraw()
+})
+
+
+
+window.addEventListener("keydown",(ev)=>{
+ 
+  if(ev.key.toLowerCase() =="z" &&  ev.ctrlKey) {
+   
+     usingPath.RemoveLastElement(state.strokes)
+     redraw()
+  }
+    
+  else if(ev.key.toLowerCase() =="y" &&  ev.ctrlKey) {
+    console.log(state.strokes)
+    usingPath.AddElement(state.strokes)
+   
+    redraw()
+   
+  }
+  
 })
