@@ -6,16 +6,9 @@ export class Path {
 
     RemoveLastElement(array){
         const element = array.pop()
-        if(element=="#" && element!=undefined){
-            array.pop()
-            this.undo.push(element)
-     
-        }else{
-            
-            
-          if(element!=undefined)  this.undo.push(element)
-          
-        } 
+        if(element!=undefined)  this.undo.push(element)
+         
+        
         
     }
 
@@ -23,12 +16,23 @@ export class Path {
 
     AddElement(array){
         const element = this.undo.pop()
-        if(element=="#"  && element!=undefined){
-        array.push(element)
-        const Otherone = this.undo.pop()
-        array.push(Otherone)
-        }else{
-           if(element!=undefined) array.push(element)
+        console.log(element)
+         if(element!=undefined){
+              array.push(element)
+              element.view = true
+         } 
+        
+    }
+
+    PushElementFromErraser(el){
+
+        if(el!=undefined){
+            const findElement = this.undo.find((item)=>item.id==el.id)
+            if(!findElement){
+         
+            this.undo.push(el)
+            }
+       
         }
     }
 

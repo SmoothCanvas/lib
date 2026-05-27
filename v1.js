@@ -1,7 +1,7 @@
 
 import { Colors } from "./Colors.js"
 import { Path } from "./Pathline.js"
-
+import { shortId } from "./utli.js"
 const container = document.querySelector(".container")
 const Layer1 = document.querySelector("#Layer1")
 const ctx = Layer1.getContext("2d")
@@ -16,6 +16,9 @@ const clear  = document.getElementById("clear")
 const undo =  document.getElementById("undo")
 const redo =  document.getElementById("redo")
 
+const erraser =  document.getElementById("erraser")
+const pen =  document.getElementById("pen")
+
 const usingPath = new Path()
 
 let state = {
@@ -26,11 +29,13 @@ let state = {
   sizeLine :12, 
   colorline :"#000",
   timer : null , 
-  alpha : 0.186,
+  alpha :  0.186,//0.186
   dx :0 ,
   dy : 0 ,
   strokes  : [] , 
-  cursormode : false
+  cursormode : false,
+  errasermode : false,
+  PointTouches  : []
 }
 
  
@@ -41,6 +46,8 @@ const Camera = {
 }
 
  
+ 
+//  colorline :"#f81788",
  
  
 
@@ -142,6 +149,15 @@ function Paint(currentx,currenty){
 
 
  
+            // ctx.beginPath();
+            // ctx.moveTo(prev.x, prev.y);
+            // ctx.quadraticCurveTo((prev.x+curr.x)/2, (prev.y+curr.y)/2, curr.x, curr.y)
+          
+            // ctx.strokeStyle= state.strokes[i].color;
+            // ctx.lineWidth = state.strokes[i].size;
+            // ctx.lineCap = "round";
+            // ctx.lineJoin = "round";
+            // ctx.stroke();
  
  
 function redraw(){
@@ -152,25 +168,27 @@ function redraw(){
       ctx.clearRect(0,0,Layer1.width,Layer1.height)
       ctx.restore()
 
-   
-      for(let i= 1;i<state.strokes.length;i++){
-        const prev = state.strokes[i-1]
-        const curr =  state.strokes[i]
-        
-        if(state.strokes[i]==="#"  || state.strokes[i]==undefined)  continue
-   
+    
+      for(let item of state.strokes){
+        if(item.view){
+
+         for(let i =1 ;i<item.points.length;i++){
+          const prev = item.points[i-1]
+          const curr  = item.points[i]
             ctx.beginPath();
             ctx.moveTo(prev.x, prev.y);
             ctx.quadraticCurveTo((prev.x+curr.x)/2, (prev.y+curr.y)/2, curr.x, curr.y)
           
-            ctx.strokeStyle= state.strokes[i].color;
-            ctx.lineWidth = state.strokes[i].size;
+            ctx.strokeStyle= item.points[i].color;
+            ctx.lineWidth = item.points[i].size;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
             ctx.stroke();
-
+        }
+        }
+        
+   
       }
-
  
 
 
@@ -179,6 +197,39 @@ function redraw(){
 
 
 }
+
+ 
+
+const HandelDitectHitting = (curx,curry,arrayOfStrokes)=>{
+  console.log(arrayOfStrokes)
+  arrayOfStrokes.forEach(element => {
+     
+    if(element.view){
+      for(const p of element.points){
+        const dx = p.x - curx
+        const dy = p.y - curry
+        const radius = 17 /Camera.zoom
+         
+
+        const match = Math.sqrt(dx*dx + dy*dy)<=radius
+      
+        if(match){
+        
+          element.view = false
+          usingPath.PushElementFromErraser(element)
+          redraw()
+
+        }
+
+      }
+    }
+       
+
+  });
+
+}
+
+
 
  
 container.addEventListener("mousemove",(e)=>{
@@ -191,16 +242,20 @@ container.addEventListener("mousemove",(e)=>{
       const rect = e.currentTarget.getBoundingClientRect();
 
 
+      const CurrentX  =  ((clientX-rect.left)-Camera.x)/Camera.zoom
+      const CurrentY  =  ((clientY-rect.top)-Camera.y)/Camera.zoom
 
-      if(state.draw){
-    
-          
-          const CurrentX  =  ((clientX-rect.left)-Camera.x)/Camera.zoom
-          const CurrentY  =  ((clientY-rect.top)-Camera.y)/Camera.zoom
-
- 
-
+      if(state.draw && !state.errasermode){
+          container.style.cursor = 'crosshair';
           Paint(CurrentX,CurrentY)
+      }  
+      
+      else if(state.errasermode  && state.draw){
+        
+        container.style.cursor = 'url("./eraser.png") 32 32, auto';
+        HandelDitectHitting(CurrentX, CurrentY, state.strokes)
+      
+
       }
       
 
@@ -221,18 +276,17 @@ const observer = new ResizeObserver(() => {
 });
 
 
+
+
 container.addEventListener("mousedown",(e)=>{
-     const {clientX,clientY} = e 
-    if(e.button==0)   {
-
-
+    const {clientX,clientY} = e 
     const contSize = e.currentTarget.getBoundingClientRect();
     const x  = (( clientX-contSize.left)-Camera.x)  /Camera.zoom
-    const y =  ((clientY-contSize.top)-Camera.y)  /Camera.zoom
-   
+    const y  =  ((clientY-contSize.top)-Camera.y)  /Camera.zoom
+
+    if(e.button==0)   {
+
     state.points.push({x :x , y : y , color : state.colorline , size :  state.sizeLine  })
-   
-    
     state.oldx = x 
     state.oldy = y 
     state.draw = true
@@ -248,6 +302,13 @@ container.addEventListener("mousedown",(e)=>{
       state.oldy = y 
        
     }
+
+    if(state.errasermode){
+     console.log("erraser mode ")
+      
+    }
+    
+   
    
 })
 
@@ -257,12 +318,20 @@ container.addEventListener("mouseup",(e)=>{
      state.draw = false
      state.cursormode = false   
    
-  
-    
-     state.strokes.push("#",...state.points ,"#")
-     state.points = []
-     console.log(state.strokes)
  
+    if(!state.errasermode){
+      state.strokes.push({
+        id:shortId(6),
+        type :"stroke",
+        points : state.points,
+        view : true
+      })
+      state.points = []
+      console.log(state.strokes)
+      
+ 
+    }
+   
    
 
 })
@@ -271,7 +340,9 @@ container.addEventListener("mouseup",(e)=>{
 observer.observe(container)
 
 
- 
+container.addEventListener("resize",()=>{
+  
+})
 
  
 
@@ -389,15 +460,15 @@ menu.addEventListener("click",()=>{
 
 
 
-undo.addEventListener("click",()=>{
-   usingPath.RemoveLastElement(state.strokes)
-  redraw()
-})
+// undo.addEventListener("click",()=>{
+//    usingPath.RemoveLastElement(state.strokes)
+//   redraw()
+// })
 
-redo.addEventListener("click",()=>{
-    usingPath.AddElement(state.strokes)
-    redraw()
-})
+// redo.addEventListener("click",()=>{
+//     usingPath.AddElement(state.strokes)
+//     redraw()
+// })
 
 
 
@@ -410,7 +481,7 @@ window.addEventListener("keydown",(ev)=>{
   }
     
   else if(ev.key.toLowerCase() =="y" &&  ev.ctrlKey) {
-    console.log(state.strokes)
+   
     usingPath.AddElement(state.strokes)
    
     redraw()
@@ -418,3 +489,47 @@ window.addEventListener("keydown",(ev)=>{
   }
   
 })
+
+
+erraser.addEventListener("click",()=>{
+  state.errasermode = true
+  container.style.cursor = 'url("./eraser.png") 32 32, auto';
+       
+        
+})
+
+pen.addEventListener("click",()=>{
+ container.style.cursor = 'crosshair';
+  state.errasermode = false
+})
+
+
+// function hitStroke(stroke, x, y){
+
+//   for(const p of stroke.points){
+
+//     const dx = p.x - x
+//     const dy = p.y - y
+
+//     if(dx*dx + dy*dy < stroke.size * stroke.size){
+//       return true
+//     }
+//   }
+
+//   return false
+
+
+// }
+  
+
+
+
+// do it for each stroke yes you can d oit 
+// do special redraw for the 
+
+
+
+ 
+
+
+ 
