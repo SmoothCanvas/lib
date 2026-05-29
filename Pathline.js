@@ -16,7 +16,7 @@ export class Path {
 
     AddElement(array){
         const element = this.undo.pop()
-        console.log(element)
+      
          if(element!=undefined){
               array.push(element)
               element.view = true

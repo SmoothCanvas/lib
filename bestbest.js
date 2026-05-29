@@ -33,12 +33,11 @@
     cursormode : false,
     errasermode : false,
     SelectMode :  false ,
-    LockDragging : false ,
-    CurrentItemIndex  : null
+    LockDragging : false 
     
   }
 
-  let ratio  = 1   ;
+  let ratio   ;
   
   const Camera = {
     x : 0 , 
@@ -46,11 +45,11 @@
     zoom :1
   }
 
- 
-  // adjust the icon and build magique thing for make your freind study with you 
+  
   
   const rc = rough.canvas(document.getElementById('Layer1'));
- 
+  console.log(rc)
+  
 
 
   let SaveOldest =  {x : 0 , y :0}
@@ -58,29 +57,37 @@
   // container.style.cursor = 'url("./controllers/gg.png") 4 32, auto';
   container.style.cursor = 'crosshair';
 
+    
+  resetOptions.addEventListener("click",()=>{
+    state.alpha =  0.186
+    state.colorline = "#000"
+    state.sizeLine = 12
+    document.getElementById("percentage").innerText = `${0}%` 
 
-        // ctx.beginPath();
-        // ctx.lineWidth = "3";
-        // ctx.strokeStyle = "#9BACFF";
-        // ctx.rect(x, y, width+2, height+2);
-        // ctx.stroke();
+    document.getElementById("size-v").innerHTML = 8
+    document.getElementById("smoothing-v").innerHTML =  0.186
+    const slider = document.getElementById("size");
+    slider.value = slider.defaultValue;
+    const slider2 = document.getElementById("smoothing");
+    slider2.value = slider2.defaultValue;
+  
+
+  })
 
   
 
   function UpdateBoundries() {
     const refBound = container.getBoundingClientRect();
-    ratio = window.devicePixelRatio || 1;   
+    ratio = window.devicePixelRatio || 1;
     
     Layer1.width = refBound.width * ratio;
     Layer1.height = refBound.height * ratio;
   
     
-    applyTransform()
-        
+    ctx.setTransform(Camera.zoom*ratio,0,0,Camera.zoom*ratio,Camera.x,Camera.y)
+
+    
   }
-
-
- 
 
   
  
@@ -150,39 +157,38 @@
 
 
   
-    function applyTransform(){
-      ctx.setTransform(
-        Camera.zoom * ratio,
-        0,
-        0,
-        Camera.zoom * ratio,
-        Camera.x * ratio,
-        Camera.y * ratio
-      );
-  }
- 
   
   
-function redraw(){
+  
+  function redraw(){
 
       
         ctx.save()
         ctx.setTransform(1,0,0,1,0,0)
         ctx.clearRect(0,0,Layer1.width,Layer1.height)
         ctx.restore()
-        applyTransform()
-              
+
+      
         for(let item of state.strokes){
-          if(item.view){
 
-            if(item.type =="Shape"){
-         
-               rc.rectangle(item.points.x, item.points.y, item.points.width, item.points.height, { fill: item.points.color})
-            }
+    if(item.view){
 
-            else if(item.type ==="stroke"){
+        switch(item.type){
 
-             for(let i =1 ;i<item.points.length;i++){
+
+           case "Shape":{
+             ctx.beginPath()
+             ctx.fillStyle = "red";
+             ctx.rect(item.points.x, item.points.y, item.points.width, item.points.height);
+             ctx.stroke();
+             break
+
+          }
+
+
+           case "stroke":{
+              
+            for(let i =1 ;i<item.points.length;i++){
               const prev = item.points[i-1]
               const curr  = item.points[i]
               ctx.beginPath();
@@ -193,11 +199,15 @@ function redraw(){
               ctx.lineWidth = item.points[i].size;
               ctx.lineCap = "round";
               ctx.lineJoin = "round";
-              ctx.stroke();
-          }}
+              ctx.stroke() 
+           }
+             break
+          }
+         }
 
 
 
+         
 
           }
           
@@ -207,21 +217,12 @@ function redraw(){
 
   }
 
-
-function getCordWordPoint(e){
-   const rect = e.currentTarget.getBoundingClientRect()
-    return{
-      CurrentX :  ((e.clientX-rect.left)-Camera.x)/Camera.zoom , 
-      CurrentY :  ((e.clientY-rect.top)-Camera.y)/Camera.zoom
-    }
-}
-
   
 
-const handleStrokeHitDetection = (curx,curry,arrayOfStrokes)=>{
-   
+  const HandelDitectHitting = (curx,curry,arrayOfStrokes)=>{
+    console.log(arrayOfStrokes)
     arrayOfStrokes.forEach(element => {
-   
+      
       if(element.view && element.type=="stroke"){
         for(const p of element.points){
           const dx = p.x - curx
@@ -247,54 +248,52 @@ const handleStrokeHitDetection = (curx,curry,arrayOfStrokes)=>{
 
   }
 
+  const  HandelDitectHittingShapes =  (CurrentX, CurrentY, StrokesOfArray) => {
 
-
-const  handleShapeHitDetection =  (CurrentX, CurrentY, StrokesOfArray) => {
-   
 
     
-    StrokesOfArray.forEach((element,index)=>{
-     
+    StrokesOfArray.forEach(element=>{
 
-    if(element.view && element.type==="Shape" && !state.LockDragging ){ 
+    if(element.view && element.type==="Shape")
+
+    { 
     
       const dx  = element.points.x - CurrentX
       const dy = element.points.y- CurrentY
 
       
     
-      const {x,y,width,height} = element.points
+    const {x,y,width,height} = element.points
+    
       const left = x  
       const top = y
       const right = left + width
       const bottom = top + height
-     // console.log({CurrentX:CurrentX,CurrentY : CurrentY} ,"left",left,"right",right ,"top",top,"bottom",bottom)
+      console.log({CurrentX:CurrentX,CurrentY : CurrentY} ,"left",left,"right",right ,"top",top,"bottom",bottom)
   
-      if(CurrentX>=left && CurrentX<=right && CurrentY>=top && CurrentY<=bottom ) {
-        console.log("Youn Holding Shape   ✅",element ,"index",index)  
-        container.style.cursor = 'grabbing';
-        state.CurrentItemIndex = index
-        state.LockDragging = true
-
-
-        
+      if(CurrentX>left && CurrentX<right && CurrentY>top && CurrentY<bottom ) {
+        console.log("Youn Holding Shape")  
       
-      } 
+      }
     
     } 
 
     })
-} 
+  } 
+  
+  
+  container.addEventListener("mousemove",(e)=>{
+  
   
 
+    
   
-container.addEventListener("mousemove",(e)=>{
-  
- 
-
-        const {CurrentX,CurrentY} = getCordWordPoint(e)
+        const {clientX,clientY} = e 
+        const rect = e.currentTarget.getBoundingClientRect();
 
 
+        const CurrentX  =  ((clientX-rect.left)-Camera.x)/Camera.zoom
+        const CurrentY  =  ((clientY-rect.top)-Camera.y)/Camera.zoom
 
         if(state.draw && !state.errasermode && !state.SelectMode){
             container.style.cursor = 'crosshair';
@@ -302,45 +301,18 @@ container.addEventListener("mousemove",(e)=>{
         }  
         
         else if(state.errasermode  && state.draw){
-        
+          
           container.style.cursor = 'url("./eraser.png") 32 32, auto';
-          handleStrokeHitDetection(CurrentX, CurrentY, state.strokes)
+          HandelDitectHitting(CurrentX, CurrentY, state.strokes)
         
 
         }
 
-        else if(state.SelectMode  && state.draw  && !state.errasermode && state.CurrentItemIndex!=null ) 
+        else if(state.SelectMode  && state.draw  && !state.errasermode) 
         {
         
-    
-  //&& state.CurrentItemIndex!=null
-            ctx.restore()
-            ctx.beginPath();
-            ctx.arc(CurrentX, CurrentY, Camera.zoom, 0, 2 * Math.PI);
-            ctx.stroke();
-            ctx.save()
- 
-         
+          HandelDitectHittingShapes(CurrentX, CurrentY, state.strokes)
 
-   
-
-         handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
-        //  console.log("im handel things" , state.CurrentItemIndex)
-        //    console.log("==>",state.strokes[state.CurrentItemIndex].points)
-
-       console.log(state.CurrentItemIndex)
-    
-        
-        const dx =  CurrentX - SaveOldest.x 
-        const dy =  CurrentY - SaveOldest.y  
-     
-        console.log(`dx ${dx}  : dy : ${dy}`)
-    
-        state.strokes[state.CurrentItemIndex].points.x+=dx
-        state.strokes[state.CurrentItemIndex].points.y+=dy
-        redraw()
-        SaveOldest.x  = CurrentX
-        SaveOldest.y = CurrentY
         }
         
 
@@ -353,7 +325,7 @@ container.addEventListener("mousemove",(e)=>{
 
   const observer = new ResizeObserver(() => {
   
- 
+  
     UpdateBoundries()
     redraw()
 
@@ -364,41 +336,28 @@ container.addEventListener("mousemove",(e)=>{
 
 
   container.addEventListener("mousedown",(e)=>{
- 
-      const {CurrentX,CurrentY} = getCordWordPoint(e)
+      const {clientX,clientY} = e 
+      const contSize = e.currentTarget.getBoundingClientRect();
+      const x  = (( clientX-contSize.left)-Camera.x)  /Camera.zoom
+      const y  =  ((clientY-contSize.top)-Camera.y)  /Camera.zoom
 
+      if(e.button==0)   {
 
-
-      if(e.button==0  )   {
-
-      if(!state.SelectMode && !state.errasermode)  state.points.push({x :CurrentX , y : CurrentY , color : state.colorline , size :  state.sizeLine  })
-
-      state.oldx = CurrentX 
-      state.oldy = CurrentY
+      state.points.push({x :x , y : y , color : state.colorline , size :  state.sizeLine  })
+      state.oldx = x 
+      state.oldy = y 
       state.draw = true
-      state.cursormode   = true
-      SaveOldest.x  = CurrentX
-      SaveOldest.y  = CurrentY
+        
       }else{
-        // const contSize = e.currentTarget.getBoundingClientRect();
-        // const x =  (e.clientX-contSize.left)
-        // const y =  (e.clientY-contSize.top)
-        // state.cursormode   = true
-        // SaveOldest.x  = x 
-        // SaveOldest.y  = y
-        // state.oldx = x 
-        // state.oldy = y 
-
-        //  const {CurrentX,CurrentY} = getCordWordPoint(e)
-        //  console.log(CurrentX,CurrentY,"<=== first thing mount")
-        //  state.cursormode   = true
-        //  SaveOldest.x  = CurrentX
-        //  SaveOldest.y  = CurrentY
-        console.log("edit mode here")
-      }
-
-      if(state.SelectMode && e.button==0){
-           handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
+        const contSize = e.currentTarget.getBoundingClientRect();
+        const x =  (clientX-contSize.left)
+        const y =  (clientY-contSize.top)
+        state.cursormode   = true
+        SaveOldest.x  = x 
+        SaveOldest.y  = y
+        state.oldx = x 
+        state.oldy = y 
+        
       }
 
     
@@ -413,9 +372,7 @@ container.addEventListener("mousemove",(e)=>{
       
       state.draw = false
       state.cursormode = false   
-      state.CurrentItemIndex = null
-      state.LockDragging = false
-
+      
   
       if(!state.errasermode && state.points.length>1){
         state.strokes.push({
@@ -429,10 +386,6 @@ container.addEventListener("mousemove",(e)=>{
         
   
       }
-
-      if(state.SelectMode){
-         container.style.cursor = 'grab';
-      }
     
     
 
@@ -442,6 +395,9 @@ container.addEventListener("mousemove",(e)=>{
   observer.observe(container)
 
 
+  container.addEventListener("resize",()=>{
+    
+  })
 
   
 
@@ -488,8 +444,8 @@ container.addEventListener("mousemove",(e)=>{
     Camera.x = mx - wx * Camera.zoom
     Camera.y = my - wy * Camera.zoom
   
+    ctx.setTransform(Camera.zoom*ratio, 0, 0, Camera.zoom*ratio, Camera.x, Camera.y)
     
-    applyTransform()
     redraw()
   })
 
@@ -518,11 +474,15 @@ container.addEventListener("mousemove",(e)=>{
     state.sizeLine =  range.value
     document.getElementById("size-v").innerHTML = range.value
   })
+
   Smoothing.addEventListener("input",(e)=>{
   
     state.alpha =  Smoothing.value
     document.getElementById("smoothing-v").innerHTML = Smoothing.value
   })
+
+
+
   clear.addEventListener("click",()=>{
     state.alpha =  0.186
     state.colorline = "#000"
@@ -543,17 +503,29 @@ container.addEventListener("mousemove",(e)=>{
     redraw()
   
   })
+  
+
   menu.addEventListener("click",()=>{
     document.getElementById("panel").classList.toggle("d-off")
   })
+
+  
+
+
+
+
   undo.addEventListener("click",()=>{
       usingPath.RemoveLastElement(state.strokes)
       redraw()
   })
+
   redo.addEventListener("click",()=>{
       usingPath.AddElement(state.strokes)
       redraw()
   })
+
+
+
   window.addEventListener("keydown",(ev)=>{
   
     if(ev.key.toLowerCase() =="z" &&  ev.ctrlKey) {
@@ -571,37 +543,29 @@ container.addEventListener("mousemove",(e)=>{
     }
     
   })
+
+
   erraser.addEventListener("click",()=>{
     state.errasermode = true
     container.style.cursor = 'url("./eraser.png") 32 32, auto';
         
           
   })
+
   pen.addEventListener("click",()=>{
   container.style.cursor = 'crosshair';
     state.errasermode = false
     state.SelectMode  = false
   })
+
+
+  
+
   SelectCursor.addEventListener("click",()=>{
   state.SelectMode = true 
   state.errasermode = false
-  container.style.cursor = 'grab';
+    container.style.cursor = 'url("./controllers/cursor.png") 4 32, auto';
   
-  })
-  resetOptions.addEventListener("click",()=>{
-    state.alpha =  0.186
-    state.colorline = "#000"
-    state.sizeLine = 12
-    document.getElementById("percentage").innerText = `${0}%` 
-
-    document.getElementById("size-v").innerHTML = 8
-    document.getElementById("smoothing-v").innerHTML =  0.186
-    const slider = document.getElementById("size");
-    slider.value = slider.defaultValue;
-    const slider2 = document.getElementById("smoothing");
-    slider2.value = slider2.defaultValue;
-  
-
   })
 
 
@@ -611,151 +575,42 @@ container.addEventListener("mousemove",(e)=>{
 
   function addShapes(){
   
-  state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 100, y: 100, width: 120, height: 120, color: "red" },
-  view: true
-})
+      state.strokes.push({
+      id:shortId(6),
+      type :"Shape",
+      points : {x:600,y:200 ,  width : 200 , height:200 },
+      view : true
+    })
 
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 180, y: 130, width: 120, height: 120, color: "blue" },
-  view: true
-})
 
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 260, y: 160, width: 120, height: 120, color: "green" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 340, y: 190, width: 120, height: 120, color: "orange" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 420, y: 220, width: 120, height: 120, color: "purple" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 500, y: 250, width: 120, height: 120, color: "cyan" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 580, y: 280, width: 120, height: 120, color: "pink" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 660, y: 310, width: 120, height: 120, color: "yellow" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 740, y: 340, width: 120, height: 120, color: "lime" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 820, y: 370, width: 120, height: 120, color: "teal" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 140, y: 420, width: 120, height: 120, color: "brown" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 220, y: 450, width: 120, height: 120, color: "magenta" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 300, y: 480, width: 120, height: 120, color: "navy" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 380, y: 510, width: 120, height: 120, color: "gold" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 460, y: 540, width: 120, height: 120, color: "silver" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 540, y: 570, width: 120, height: 120, color: "coral" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 620, y: 600, width: 120, height: 120, color: "indigo" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 700, y: 630, width: 120, height: 120, color: "violet" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 780, y: 660, width: 120, height: 120, color: "crimson" },
-  view: true
-})
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  points: { x: 860, y: 690, width: 120, height: 120, color: "darkgreen" },
-  view: true
-})
     
+    //   state.strokes.push({
+    //   id:shortId(6),
+    //   type :"Shape",
+    //   points : {x:500,y:799 ,  width : 100 , height:100/2 },
+    //   view : true
+    // })
+
 
   }
   
 
 
-    
+
+  //  util function mabe use i 
+
+  // function getScaledCoordinates(x, y, width, height, zoomScale) {
+  //     const left = x / zoomScale;
+  //     const top = y / zoomScale;
+  //     const right = left + (width / zoomScale);
+  //     const bottom = top + (height / zoomScale);
+
+  //     return { left, top, right, bottom };
+  // }
+
+  // // Example usage:
+  // const rectCoords = getScaledCoordinates(100, 100, 200, 150, 2);
+  // console.log(rectCoords); 
+  // // Output: { left: 50, top: 50, right: 150, bottom: 125 
 
   addShapes()
