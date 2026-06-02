@@ -1,0 +1,179 @@
+<div class="ultra-tv">
+
+    <div class="tv-topbar">
+        <div class="dots">
+            <span class="red"></span>
+            <span class="yellow"></span>
+            <span class="green"></span>
+        </div>
+
+      
+    </div>
+
+    <div class="screen-glow"></div>
+
+    <iframe
+      src="https://www.youtube.com/embed/jNQXAC9IVRw?autoplay=1"
+      allowfullscreen>
+    </iframe>
+
+</div>
+
+
+<style>
+
+ 
+/* MAIN TV */
+.ultra-tv{
+    position:absolute;
+
+    top:180px;
+    left:900px;
+
+    width:480px;
+    height:290px;
+
+    border-radius:28px;
+
+    overflow:hidden;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,0.18),
+        rgba(255,255,255,0.03)
+      );
+
+    backdrop-filter: blur(30px);
+
+    border:
+      1px solid rgba(255,255,255,0.18);
+
+    box-shadow:
+      0 20px 60px rgba(0,0,0,0.18),
+      inset 0 1px 1px rgba(255,255,255,0.25),
+      inset 0 -1px 1px rgba(255,255,255,0.05);
+
+    transition:0.35s cubic-bezier(.2,.8,.2,1);
+
+    transform-style: preserve-3d;
+
+    transform: scale(1);
+}
+
+/* SEXY HOVER */
+.ultra-tv:hover{
+    transform:
+      scale(1.03)
+      translateY(-4px);
+
+    box-shadow:
+      0 35px 80px rgba(0,0,0,0.28),
+      0 0 40px rgba(255,255,255,0.08);
+}
+
+/* TOP BAR */
+.tv-topbar{
+    position:absolute;
+
+    top:0;
+    left:0;
+    right:0;
+
+    height:30px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 16px;
+
+    z-index:5;
+
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.02)
+      );
+
+    backdrop-filter: blur(20px);
+}
+
+/* MAC DOTS */
+.dots{
+    display:flex;
+    gap:8px;
+}
+
+.dots span{
+    width:11px;
+    height:11px;
+    border-radius:50%;
+}
+
+.red{
+    background:#ff5f57;
+}
+
+.yellow{
+    background:#febc2e;
+}
+
+.green{
+    background:#28c840;
+}
+
+/* TITLE */
+.title{
+    color:white;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.5px;
+
+    opacity:.85;
+}
+
+/* VIDEO */
+.ultra-tv iframe{
+    width:100%;
+    height:100%;
+    border:none;
+
+    border-radius:28px;
+
+    transform:scale(1.01);
+}
+
+/* AMBIENT GLOW */
+.screen-glow{
+    position:absolute;
+
+    inset:-40px;
+
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(0,140,255,0.15),
+        transparent 70%
+      );
+
+    filter:blur(60px);
+
+    z-index:-1;
+
+    animation: glow 6s infinite alternate;
+}
+
+@keyframes glow{
+    from{
+        opacity:.4;
+        transform:scale(1);
+    }
+
+    to{
+        opacity:.9;
+        transform:scale(1.1);
+    }
+}
+</style>

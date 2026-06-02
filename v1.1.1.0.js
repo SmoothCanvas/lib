@@ -156,10 +156,6 @@ function redraw(){
         ctx.restore()
         applyTransform()  // say it here  <div class="toolBar" style="position: absolute; transform: translate(px, 0px);"> 
               
-
-          //  tools.style.top   = `${item.points.y-toolsHeight-8}px`
-          //       tools.style.left = `${item.points.x + (item.points.width / 2) - (toolsWidth / 2)}px`
-
         for(let item of state.strokes){
           if(item.view){
 
@@ -169,17 +165,17 @@ function redraw(){
                if(item.isCurrentSelect){
                 DrawBorderToTheObject(ctx,item.points.x,item.points.y , item.points.width, item.points.height)
              
-                // let CreateShape  = `
-                // <div class="toolBar" id="xxx" style="transform: scale(${Camera.zoom});">
-                // <button>Duplicate</button><button>edit</button> <button>delete</button>
-                // </div>`
+                let CreateShape  = `
+                <div class="toolBar" id="xxx" style="transform: scale(${Camera.zoom});">
+                <button>Duplicate</button><button>edit</button> <button>delete</button>
+                </div>`
                 
-                // document.getElementById("tool-bar").innerHTML = CreateShape
-                // const  tools = document.getElementById("tool-bar")
-                // console.log(item.points.x,item.points.y,item)
-                // tools.style.top = `${item.points.y}px`
-                // tools.style.top = `${item.points.x}px`
-                // // make the width and the height the same thing to s olve it
+                document.getElementById("tool-bar").innerHTML = CreateShape
+                const  tools = document.getElementById("tool-bar")
+                const toolsHeight = tools.offsetHeight 
+                const toolsWidth  = tools.offsetWidth
+                tools.style.top   = `${item.points.y-toolsHeight-8}px`
+                tools.style.left = `${item.points.x + (item.points.width / 2) - (toolsWidth / 2)}px`
                }
              
             
@@ -278,39 +274,40 @@ const handleStrokeHitDetection = (curx,curry,arrayOfStrokes)=>{
     console.log("------------")
 }
 const  handleShapeHitDetection =  (CurrentX, CurrentY, StrokesOfArray) => {
+   
+
     
+    StrokesOfArray.forEach((element,index)=>{
+     
 
-     // imchi bel 3aks 5atr item bch tl9ah lfou9
-
-     for(let i = StrokesOfArray.length - 1; i >= 0; i--){
-
-      if(StrokesOfArray[i].view && StrokesOfArray[i].type==="Shape" && !state.LockDragging ){ 
+    if(element.view && element.type==="Shape" && !state.LockDragging ){ 
     
-      const dx  =  StrokesOfArray[i].points.x - CurrentX
-      const dy  =  StrokesOfArray[i].points.y- CurrentY
+      const dx  = element.points.x - CurrentX
+      const dy = element.points.y- CurrentY
 
       
     
-      const {x,y,width,height} = StrokesOfArray[i].points
- 
-
-      if(CurrentX>=x && CurrentX<=x+width  && CurrentY>=y && CurrentY<=y + height ) {
-       
+      const {x,y,width,height} = element.points
+      const left = x  
+      const top = y
+      const right = left + width
+      const bottom = top + height
+     // console.log({CurrentX:CurrentX,CurrentY : CurrentY} ,"left",left,"right",right ,"top",top,"bottom",bottom)
+  
+      if(CurrentX>=left && CurrentX<=right && CurrentY>=top && CurrentY<=bottom ) {
+        //console.log("Youn Holding Shape   ✅",element ,"index",index)  
         container.style.cursor = 'grabbing';
-        state.CurrentItemIndex = i
+        state.CurrentItemIndex = index
         state.LockDragging = true
-        break
         
+
         
       
       } 
     
     } 
-      
-     }
 
-
- 
+    })
 } 
 const vacuum  =    ()=>{
  
@@ -337,7 +334,8 @@ let DrawBorderToTheObject  = function (ctx ,x,y,w,h){
 //---------------------------------------------------functions---------------------------------------------
 
  
-
+// next featurrs is bring shapes
+// do sext icon
   
 container.addEventListener("mousemove",(e)=>{
   
@@ -352,12 +350,38 @@ container.addEventListener("mousemove",(e)=>{
             Paint(CurrentX,CurrentY)
         }  
         
-        else if(state.errasermode  && state.draw){container.style.cursor = 'url("./eraser.png") 32 32, auto' }
+        else if(state.errasermode  && state.draw){
+        
+          container.style.cursor = 'url("./eraser.png") 32 32, auto';
+          handleStrokeHitDetection(CurrentX, CurrentY, state.strokes)
+        
+
+        }
+      
+
+        else if(state.SelectMode  && state.draw  && !state.errasermode && state.CurrentItemIndex!=null ) 
+        {
+        
+            //state.CurrentItemIndex!=null  down not working
+ 
+            // ctx.restore()
+            // ctx.beginPath();
+            // ctx.arc(CurrentX, CurrentY, Camera.zoom, 0, 2 * Math.PI);
+            // ctx.stroke();
+            // ctx.save()
+ 
+         
+
+   
+               
+            let {x,y,width,height}   = state.strokes[state.CurrentItemIndex].points 
+        
+            
+            
+            handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
+      
     
 
-        else if(state.SelectMode  && state.draw  && !state.errasermode && state.CurrentItemIndex!=null )  {
-          
-            let {x,y,width,height}   = state.strokes[state.CurrentItemIndex].points 
             state.strokes[state.CurrentItemIndex].points.x+=dx
             state.strokes[state.CurrentItemIndex].points.y+=dy
             redraw()
@@ -365,9 +389,11 @@ container.addEventListener("mousemove",(e)=>{
             SaveOldest.y = CurrentY
 
 
-
         }
         else if(  state.aspectChange ){
+          //For changne aspect width and height
+          handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
+          
           if( state.CurrentItemIndex!=null){
           
             state.strokes[state.CurrentItemIndex].points.width+=dx
@@ -416,17 +442,27 @@ container.addEventListener("mousemove",(e)=>{
       state.cursormode   = true
       SaveOldest.x  = CurrentX
       SaveOldest.y  = CurrentY
-      }
-      else{
+      }else{
+        // const contSize = e.currentTarget.getBoundingClientRect();
+        // const x =  (e.clientX-contSize.left)
+        // const y =  (e.clientY-contSize.top)
+        // state.cursormode   = true
+        // SaveOldest.x  = x 
+        // SaveOldest.y  = y
+        // state.oldx = x 
+        // state.oldy = y 
 
+        //  const {CurrentX,CurrentY} = getCordWordPoint(e)
+        //  console.log(CurrentX,CurrentY,"<=== first thing mount")
+        //  state.cursormode   = true
+        //  SaveOldest.x  = CurrentX
+        //  SaveOldest.y  = CurrentY
 
         SaveOldest.x  = CurrentX
         SaveOldest.y  = CurrentY
         state.aspectChange = true
-        handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
 
-   
-
+        console.log("edit mode here")
       }
 
       if(state.SelectMode && e.button==0){
@@ -435,12 +471,12 @@ container.addEventListener("mousemove",(e)=>{
         
            if(state.CurrentItemIndex!=null) {
 
-           if(state.CurrentItemIndex === state.localIndexSelecting) {
+          //  if(state.CurrentItemIndex === state.localIndexSelecting) {
              
-              state.strokes[state.CurrentItemIndex].isCurrentSelect = true
-              redraw()
-              return
-           }
+          //     state.strokes[state.CurrentItemIndex].isCurrentSelect = true
+          //     redraw()
+          //     return
+          //  }
 
            if(state.localIndexSelecting!=null )  {
               state.strokes[state.localIndexSelecting].isCurrentSelect = false
@@ -470,10 +506,6 @@ container.addEventListener("mousemove",(e)=>{
 
     
       
-        if(state.errasermode){
-        
-        handleStrokeHitDetection(CurrentX, CurrentY, state.strokes)
-      }
       
     
     

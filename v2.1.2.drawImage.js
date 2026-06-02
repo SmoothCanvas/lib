@@ -20,6 +20,10 @@
   const pen =  document.getElementById("pen")
   const usingPath = new Path()
   const SelectCursor  = document.getElementById("SelectCursor")
+ 
+// point for caash this good idea you going to do it 
+
+// ---------------------------------------------------State---------------------------------------------
 
   let state = {
     draw : false , 
@@ -32,16 +36,21 @@
     dx :0 ,
     dy : 0 ,
     strokes  : [] , 
+    Shapes : [], 
     cursormode : false,
     errasermode : false,
     SelectMode :  false ,
-    LockDragging : false ,
-    CurrentItemIndex  : null,
-    aspectChange  : false ,
-    localIndexSelecting  : null 
+
+    // new work
+    LEFTBUTTONMOUSE : 0 ,
+    RIGHTBUTTONMOUE : 2 , 
+    dragMode  : false ,
+    currentEntite  : -1
+   
     
   }
 
+  let SaveOldest =  {x : 0 , y :0}
   let ratio  = 1   ;
   
   const Camera = {
@@ -51,26 +60,16 @@
   }
 
  
-  // adjust the icon and build magique thing for make your freind study with you 
-  // add all touch point addjusment
-  const rc = rough.canvas(document.getElementById('Layer1'));
- 
-
-
-  let SaveOldest =  {x : 0 , y :0}
-
-  // container.style.cursor = 'url("./controllers/gg.png") 4 32, auto';
-  container.style.cursor = 'crosshair';
-
-
-        // ctx.beginPath();
-        // ctx.lineWidth = "3";
-        // ctx.strokeStyle = "#9BACFF";
-        // ctx.rect(x, y, width+2, height+2);
-        // ctx.stroke();
-
-  
     
+    
+// ---------------------------------------------------State---------------------------------------------
+
+ 
+const rc = rough.canvas(document.getElementById('Layer1'));
+container.style.cursor = 'crosshair';
+
+
+
 // ---------------------------------------------------functions---------------------------------------------
 
 function UpdateBoundries() {
@@ -83,7 +82,7 @@ function UpdateBoundries() {
     
     applyTransform()
         
-  }
+}
 function buildPath(points) {
 
     if (points.length === 0) return "";
@@ -135,7 +134,7 @@ function Paint(currentx,currenty){
     
       state.oldx = x
       state.oldy = y
-  }
+}
 function applyTransform(){
       ctx.setTransform(
         Camera.zoom * ratio,
@@ -145,48 +144,32 @@ function applyTransform(){
         Camera.x * ratio,
         Camera.y * ratio
       );
-  }
+}
 function redraw(){
 
-       console.log("----------")
+    
     
         ctx.save()
         ctx.setTransform(1,0,0,1,0,0)
         ctx.clearRect(0,0,Layer1.width,Layer1.height)
         ctx.restore()
-        applyTransform()  // say it here  <div class="toolBar" style="position: absolute; transform: translate(px, 0px);"> 
-              
+        applyTransform()   
+        // RendersStrokes
+        RenderStrokes()
+        RenderShapes()
+      
 
-          //  tools.style.top   = `${item.points.y-toolsHeight-8}px`
-          //       tools.style.left = `${item.points.x + (item.points.width / 2) - (toolsWidth / 2)}px`
+ 
+}
 
-        for(let item of state.strokes){
-          if(item.view){
 
-            if(item.type =="Shape"){
+function RenderStrokes (){
+  
+     for(let item of state.strokes){
+       
+
+ 
          
-               rc.rectangle(item.points.x, item.points.y, item.points.width, item.points.height, { fill: item.points.color})
-               if(item.isCurrentSelect){
-                DrawBorderToTheObject(ctx,item.points.x,item.points.y , item.points.width, item.points.height)
-             
-                // let CreateShape  = `
-                // <div class="toolBar" id="xxx" style="transform: scale(${Camera.zoom});">
-                // <button>Duplicate</button><button>edit</button> <button>delete</button>
-                // </div>`
-                
-                // document.getElementById("tool-bar").innerHTML = CreateShape
-                // const  tools = document.getElementById("tool-bar")
-                // console.log(item.points.x,item.points.y,item)
-                // tools.style.top = `${item.points.y}px`
-                // tools.style.top = `${item.points.x}px`
-                // // make the width and the height the same thing to s olve it
-               }
-             
-            
-            }
-
-            else if(item.type ==="stroke"){
-
              for(let i =1 ;i<item.points.length;i++){
               const prev = item.points[i-1]
               const curr  = item.points[i]
@@ -201,15 +184,18 @@ function redraw(){
               ctx.stroke();
           }}
 
+        
 
+}
 
+function RenderShapes(){
+     for(let item of state.Shapes){
+      rc.rectangle(item.points.x, item.points.y, item.points.width,item.points.height); 
+    } 
 
-          }
-         
-        }
+ 
+}
 
-  //  drawImage(ctx,"https://picsum.photos/id/237/200/300" ,Layer1.width/2 , Layer1.height/2 , 200,200)
-  }
 function getCordWordPoint(e){
    const rect = e.currentTarget.getBoundingClientRect()
     return{
@@ -217,7 +203,6 @@ function getCordWordPoint(e){
       CurrentY :  ((e.clientY-rect.top)-Camera.y)/Camera.zoom
     }
 }
-
 function drawImage(ctx,LinkImage , x,y,w,h){
 
       const img = new Image();
@@ -228,28 +213,11 @@ function drawImage(ctx,LinkImage , x,y,w,h){
 
       img.src = LinkImage
 } 
-
 const handleStrokeHitDetection = (curx,curry,arrayOfStrokes)=>{
    
-    arrayOfStrokes.forEach(element => {
+  arrayOfStrokes.forEach(element => {
 
-      if(element.view  && element.type ==="Shape"){
-        const {x,y,width,height} = element.points
-        const left = x  
-        const top = y
-        const right = left + width
-        const bottom = top + height
-
-         if(curx>=x   && curx<=x+width && curry>=y && curry<=y+height ) {
-          usingPath.PushElementFromErraser(element)
-          element.view = false
-          redraw()
-           
-         } 
-
-
-      }
-      
+ 
    
       if(element.view && element.type=="stroke"){
         for(const p of element.points){
@@ -274,50 +242,13 @@ const handleStrokeHitDetection = (curx,curry,arrayOfStrokes)=>{
   
         
 
-    });
-    console.log("------------")
-}
-const  handleShapeHitDetection =  (CurrentX, CurrentY, StrokesOfArray) => {
-    
-
-     // imchi bel 3aks 5atr item bch tl9ah lfou9
-
-     for(let i = StrokesOfArray.length - 1; i >= 0; i--){
-
-      if(StrokesOfArray[i].view && StrokesOfArray[i].type==="Shape" && !state.LockDragging ){ 
-    
-      const dx  =  StrokesOfArray[i].points.x - CurrentX
-      const dy  =  StrokesOfArray[i].points.y- CurrentY
-
-      
-    
-      const {x,y,width,height} = StrokesOfArray[i].points
- 
-
-      if(CurrentX>=x && CurrentX<=x+width  && CurrentY>=y && CurrentY<=y + height ) {
-       
-        container.style.cursor = 'grabbing';
-        state.CurrentItemIndex = i
-        state.LockDragging = true
-        break
-        
-        
-      
-      } 
-    
-    } 
-      
-     }
-
-
- 
-} 
-const vacuum  =    ()=>{
+    }
+)}
+const vacuum  =  ()=>{
  
   state.strokes = state.strokes.filter((item)=>item.view)
     
 }
-
 let getOffsetDxDy = function  (CurrentX ,CurrentY){
   return {
     dx : CurrentX- SaveOldest.x ,
@@ -334,11 +265,56 @@ let DrawBorderToTheObject  = function (ctx ,x,y,w,h){
         ctx.stroke();
 
 }
-//---------------------------------------------------functions---------------------------------------------
+function addShapes(){
+  
+  state.Shapes.push({
+  id: shortId(6),
+  
+  type: "Shape",
+  isCurrentSelect  : false  ,
+  points: { x: 500, y: 400, width: 200, height: 200, color: "green" },
+  view: true
+})
 
  
 
+state.Shapes.push({
+  id: shortId(6),
+  type: "Shape",
+  isCurrentSelect  : false ,
+  points: { x: 700, y: 700, width: 120, height: 120, color: "red"  },
+  view: true
+})
+
+ 
+// state.strokes.push({
+//   id: shortId(6),
+//   type: "Shape",
+//   isCurrentSelect  : false ,
+//   points: { x: 860, y: 690, width: 120, height: 120, color: "blue"  },
+//   view: true
+// })
+    
+
+  }
+let  HandelShapesDectection = function(currx,curry,arrayOfStrokes){
+
+
+ 
+return arrayOfStrokes.findIndex((item)=>item.type=="Shape" &&  (currx>=item.points.x  && currx<=item.points.x+item.points.width  && curry>=item.points.y && curry<=item.points.y+item.points.height))
+
+
   
+}
+
+
+
+//------------------------------------------------------------------------------------------------
+
+ 
+
+// ---------------------------------------------------Events---------------------------------------------
+ 
 container.addEventListener("mousemove",(e)=>{
   
  
@@ -347,38 +323,42 @@ container.addEventListener("mousemove",(e)=>{
  
         const {dx,dy}  = getOffsetDxDy(CurrentX,CurrentY)
 
-        if(state.draw && !state.errasermode && !state.SelectMode){
+        if(state.draw && !state.errasermode && !state.SelectMode ){
             container.style.cursor = 'crosshair';
             Paint(CurrentX,CurrentY)
         }  
         
-        else if(state.errasermode  && state.draw){container.style.cursor = 'url("./eraser.png") 32 32, auto' }
+         if(state.errasermode  && state.draw){
+          container.style.cursor = 'url("./eraser.png") 32 32, auto' 
+          handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
+        
+        }
+     // tell chatgpt about this 
+         
+        if(state.draw && state.SelectMode && state.currentEntite!=-1 && state.currentEntite!=undefined   && state.currentEntite !=null){
+            
+            console.log({CurrentX,CurrentY})
+            const EntiteMove = state.Shapes[state.currentEntite].points
+            EntiteMove.x+=dx
+            EntiteMove.y+=dy
+            
+            
+            // ctx.clearRect(EntiteMove.x, EntiteMove.y,EntiteMove.width,EntiteMove.height);
+            rc.rectangle(EntiteMove.x, EntiteMove.y,EntiteMove.width,EntiteMove.height);  
+              
+                ctx.save()
+                ctx.setTransform(1,0,0,1,0,0)
+                ctx.clearRect(0,0,Layer1.width,Layer1.height)
+                ctx.restore()
+
+                RenderShapes()
+            
+            SaveOldest.x = CurrentX
+            SaveOldest.y = CurrentY
+          
     
-
-        else if(state.SelectMode  && state.draw  && !state.errasermode && state.CurrentItemIndex!=null )  {
-          
-            let {x,y,width,height}   = state.strokes[state.CurrentItemIndex].points 
-            state.strokes[state.CurrentItemIndex].points.x+=dx
-            state.strokes[state.CurrentItemIndex].points.y+=dy
-            redraw()
-            SaveOldest.x  = CurrentX
-            SaveOldest.y = CurrentY
-
-
-
         }
-        else if(  state.aspectChange ){
-          if( state.CurrentItemIndex!=null){
-          
-            state.strokes[state.CurrentItemIndex].points.width+=dx
-            state.strokes[state.CurrentItemIndex].points.height+=dy
-            redraw()
-            SaveOldest.x  = CurrentX
-            SaveOldest.y = CurrentY
-           }
-
-
-        }
+         
         
 
 
@@ -388,105 +368,65 @@ container.addEventListener("mousemove",(e)=>{
 
 
 
-  const observer = new ResizeObserver(() => {
-  
- 
-    UpdateBoundries()
-    redraw()
-
-
-  });
 
 
 
-
-  container.addEventListener("mousedown",(e)=>{
+container.addEventListener("mousedown",(e)=>{
  
       const {CurrentX,CurrentY} = getCordWordPoint(e)
-
-
-
-      if(e.button==0  )   {
-
-      if(!state.SelectMode && !state.errasermode)  state.points.push({x :CurrentX , y : CurrentY , color : state.colorline , size :  state.sizeLine  })
-
-      state.oldx = CurrentX 
-      state.oldy = CurrentY
-      state.draw = true
-      state.cursormode   = true
       SaveOldest.x  = CurrentX
       SaveOldest.y  = CurrentY
-      }
-      else{
 
 
-        SaveOldest.x  = CurrentX
-        SaveOldest.y  = CurrentY
-        state.aspectChange = true
-        handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
+      if(e.button==state.LEFTBUTTONMOUSE)   {
 
-   
 
-      }
-
-      if(state.SelectMode && e.button==0){
-           
-           handleShapeHitDetection(CurrentX, CurrentY, state.strokes)
-        
-           if(state.CurrentItemIndex!=null) {
-
-           if(state.CurrentItemIndex === state.localIndexSelecting) {
-             
-              state.strokes[state.CurrentItemIndex].isCurrentSelect = true
-              redraw()
-              return
-           }
-
-           if(state.localIndexSelecting!=null )  {
-              state.strokes[state.localIndexSelecting].isCurrentSelect = false
-              
-            }
+            if(!state.SelectMode && !state.errasermode)  state.points.push({x :CurrentX , y : CurrentY , color : state.colorline , size :  state.sizeLine  })
+            state.draw = true
+            state.oldx = CurrentX 
+            state.oldy = CurrentY
             
+ 
+      }
+
+ 
+
+      if(state.errasermode ){
      
-
-            state.strokes[state.CurrentItemIndex].isCurrentSelect = true
-            state.localIndexSelecting = state.CurrentItemIndex
-            redraw()
-           
-           }else{
-            
-                document.getElementById("xxx")?.remove() 
-                state.strokes.forEach((item)=>{ item.isCurrentSelect = false })
-                redraw()
-                  
-              
-          
-           }
-
-           
-
-      state.strokes.map((item)=>console.log(item))
-      }
-
-    
-      
-        if(state.errasermode){
-        
-        handleStrokeHitDetection(CurrentX, CurrentY, state.strokes)
+        handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
       }
       
+      if(state.SelectMode  && state.draw){
     
+    
+        const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
+        state.currentEntite = IndexEntite  // i did this for dynamic take the right index or -1 and in 
+        console.log(IndexEntite)
+        //  mouse down do the check ahhha it come to my mind for the first time when the mouse up 
+        // make the indexEnttite  -1 and i get this idea and do it dynamiclly 
+
+        // if(IndexEntite!=-1){
+        //   console.log("we catch item",IndexEntite)
+        //   state.currentEntite = IndexEntite
+        // }
+        // else{
+        //   console.log("you   click in wrong state ?")
+        // }
+      }
+
+
+
+
+ 
     
   })
-
 
   container.addEventListener("mouseup",(e)=>{
       
       state.draw = false
       state.cursormode = false   
-      state.CurrentItemIndex = null
-      state.LockDragging = false
-      state.aspectChange = false
+   
+      // container.style.cursor = 'grab' 
   
       if(!state.errasermode && state.points.length>1){
         state.strokes.push({
@@ -501,32 +441,17 @@ container.addEventListener("mousemove",(e)=>{
   
       }
 
-      if(state.SelectMode){
-         container.style.cursor = 'grab';
-      }
+  
 
-      // haha this inspire from background  PostgreSql
+       
       vacuum()
-    
+      redraw()
+     
    
   })
 
 
-  observer.observe(container)
-
-
-
-  
-
-  
-  
-  
-  
-    
-  
-  
-
-  container.addEventListener("contextmenu",(e)=>{
+container.addEventListener("contextmenu",(e)=>{
     e.preventDefault()
   
   
@@ -534,10 +459,8 @@ container.addEventListener("mousemove",(e)=>{
   
   })
 
-  
 
-  
-  Layer1.addEventListener("wheel", (e) => {
+Layer1.addEventListener("wheel", (e) => {
     e.preventDefault()
 
     const zoomSpeed = 0.001
@@ -567,6 +490,49 @@ container.addEventListener("mousemove",(e)=>{
   })
 
   
+
+
+
+  // ---------------------------------------------------Events---------------------------------------------
+
+
+
+const observer = new ResizeObserver(() => {
+  
+ 
+    UpdateBoundries()
+    redraw()
+
+
+  });
+
+
+
+observer.observe(container)
+
+
+
+
+  
+
+  
+  
+  
+  
+    
+  
+  
+
+
+
+  
+
+
+
+  // ---------------------------------------------------Button Events ---------------------------------------------
+  
+
+  
   
   
 
@@ -575,7 +541,7 @@ container.addEventListener("mousemove",(e)=>{
   state.cursormode = false 
   state.errasermode = false 
   state.SelectMode = false
-  state.LockDragging = false
+ 
   container.style.cursor = 'crosshair';
   }
   
@@ -687,150 +653,7 @@ container.addEventListener("mousemove",(e)=>{
 
 
 
-  function addShapes(){
-  
-  state.strokes.push({
-  id: shortId(6),
-  
-  type: "Shape",
-  isCurrentSelect  : false  ,
-  points: { x: 500, y: 400, width: 200, height: 200, color: "green" },
-  view: true
-})
 
- 
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  isCurrentSelect  : false ,
-  points: { x: 260, y: 160, width: 120, height: 120, color: "red"  },
-  view: true
-})
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 340, y: 190, width: 120, height: 120, color: "orange" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 420, y: 220, width: 120, height: 120, color: "purple" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 500, y: 250, width: 120, height: 120, color: "cyan" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 580, y: 280, width: 120, height: 120, color: "pink" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 660, y: 310, width: 120, height: 120, color: "yellow" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 740, y: 340, width: 120, height: 120, color: "lime" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 820, y: 370, width: 120, height: 120, color: "teal" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 140, y: 420, width: 120, height: 120, color: "brown" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 220, y: 450, width: 120, height: 120, color: "magenta" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 300, y: 480, width: 120, height: 120, color: "navy" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 380, y: 510, width: 120, height: 120, color: "gold" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 460, y: 540, width: 120, height: 120, color: "silver" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 540, y: 570, width: 120, height: 120, color: "coral" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 620, y: 600, width: 120, height: 120, color: "indigo" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 700, y: 630, width: 120, height: 120, color: "violet" },
-//   view: true
-// })
-
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   points: { x: 780, y: 660, width: 120, height: 120, color: "crimson" },
-//   view: true
-// })
-
-state.strokes.push({
-  id: shortId(6),
-  type: "Shape",
-  isCurrentSelect  : false ,
-  points: { x: 860, y: 690, width: 120, height: 120, color: "blue"  },
-  view: true
-})
-    
-
-  }
-  
 
 
     
