@@ -47,7 +47,8 @@
     LEFTBUTTONMOUSE : 0 ,
     RIGHTBUTTONMOUE : 2 , 
     dragMode  : false ,
-    currentEntite  : -1
+    currentEntite  : -1,
+    dragAspectIetms :  false 
    
     
   }
@@ -220,7 +221,23 @@ function RenderStrokes (){
 
 function RenderShapes(){
      for(let item of state.Shapes){
-      rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height); 
+      
+            switch(item.typeShape){
+                case  "rectangle":{
+
+                   rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);   
+                   break
+                }
+                case "circle":{
+                  
+                    ctx2.beginPath();
+                    ctx2.arc(item.points.x, item.points.y, item.points.radius, 0, 2 * Math.PI);
+                    ctx2.stroke();
+                    break
+
+                }
+            }
+     
     } 
 
  
@@ -324,24 +341,39 @@ state.Shapes.push({
 })
 
  
-// state.strokes.push({
-//   id: shortId(6),
-//   type: "Shape",
-//   isCurrentSelect  : false ,
-//   points: { x: 860, y: 690, width: 120, height: 120, color: "blue"  },
-//   view: true
-// })
+state.Shapes.push({
+  id: shortId(6),
+  type: "Shape",
+  isCurrentSelect  : false ,
+  typeShape : "circle",
+  points: { x: 860, y: 690,radius : 30, color: "blue"  },
+  view: true
+})
     
 
   }
-let  HandelShapesDectection = function(currx,curry,arrayOfStrokes){
+function HandelShapesDectection(currx, curry, arrayOfStrokes) {
+  return arrayOfStrokes.findLastIndex((item) => {
+    if (item.type !== "Shape") return false;
 
+    if (item.typeShape === "rectangle") {
+      return (
+        currx >= item.points.x &&
+        currx <= item.points.x + item.points.width &&
+        curry >= item.points.y &&
+        curry <= item.points.y + item.points.height
+      );
+    }
 
- 
-return arrayOfStrokes.findIndex((item)=>item.type=="Shape" &&  (currx>=item.points.x  && currx<=item.points.x+item.points.width  && curry>=item.points.y && curry<=item.points.y+item.points.height))
+    if (item.typeShape === "circle") {
+      const dx = currx - item.points.x;
+      const dy = curry - item.points.y;
 
+      return dx * dx + dy * dy <= item.points.radius ** 2;
+    }
 
-  
+    return false;
+  });
 }
 
 
@@ -379,15 +411,51 @@ container.addEventListener("mousemove",(e)=>{
             const EntiteMove = state.Shapes[state.currentEntite].points
             EntiteMove.x+=dx
             EntiteMove.y+=dy
-            rc2.rectangle(EntiteMove.x, EntiteMove.y,EntiteMove.width,EntiteMove.height);  
+     
+             
               
             RestartCanvas(ctx2,Layer2) //  remove it you gonna see something cool
+            
             RenderShapes()
             
             SaveOldest.x = CurrentX
             SaveOldest.y = CurrentY
           
     
+        }
+
+        if(state.dragAspectIetms && state.currentEntite !=-1){
+            const EntiteMove = state.Shapes[state.currentEntite]
+        
+            if(EntiteMove.typeShape === "rectangle"){
+
+                EntiteMove.points.width+=dx
+                EntiteMove.points.height+=dy
+            }
+             if(EntiteMove.typeShape ==="circle"){
+                  
+               
+
+                if(EntiteMove.points.radius<20 ){
+                      if(dx>0){
+                            EntiteMove.points.radius+=dx 
+                      }
+                }else{
+                     EntiteMove.points.radius+=dx 
+                }
+
+               
+             }
+
+            
+              
+          
+            RestartCanvas(ctx2,Layer2) 
+            
+            RenderShapes()
+            
+            SaveOldest.x = CurrentX
+            SaveOldest.y = CurrentY
         }
          
         
@@ -423,7 +491,7 @@ container.addEventListener("mousedown",(e)=>{
  
 
       if(state.errasermode ){
-         console.log("errerse mode working")
+         
         handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
       }
       
@@ -433,16 +501,16 @@ container.addEventListener("mousedown",(e)=>{
         const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
         state.currentEntite = IndexEntite  // i did this for dynamic take the right index or -1 and in 
         console.log(IndexEntite)
-        //  mouse down do the check ahhha it come to my mind for the first time when the mouse up 
-        // make the indexEnttite  -1 and i get this idea and do it dynamiclly 
 
-        // if(IndexEntite!=-1){
-        //   console.log("we catch item",IndexEntite)
-        //   state.currentEntite = IndexEntite
-        // }
-        // else{
-        //   console.log("you   click in wrong state ?")
-        // }
+      }
+
+      if(e.button === state.RIGHTBUTTONMOUE &&  state.SelectMode ){
+        
+        const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
+        state.currentEntite = IndexEntite   
+        console.log("We catch new item",IndexEntite)
+        state.dragAspectIetms = true
+      
       }
 
 
@@ -456,7 +524,7 @@ container.addEventListener("mousedown",(e)=>{
       
       state.draw = false
       state.cursormode = false   
-   
+      state.dragAspectIetms = false
       // container.style.cursor = 'grab' 
   
       if(!state.errasermode && state.points.length>1){
