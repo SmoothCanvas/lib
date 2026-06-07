@@ -190,12 +190,16 @@ function applyTransform(){
 
 
 }
+
 function RestartCanvas(ctx , Layer){
         ctx.save()
         ctx.setTransform(1,0,0,1,0,0)
         ctx.clearRect(0,0,Layer.width,Layer.height)
         ctx.restore()
 }
+
+
+
 function drawOctagon(cx, cy, size) {
     ctx.beginPath();
 
@@ -211,6 +215,7 @@ function drawOctagon(cx, cy, size) {
     ctx.closePath();
     ctx.fill();
 }
+
 function drawPolygon(cx, cy, size, sides, color) {
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -245,6 +250,7 @@ function drawStar(cx, cy, outerRadius, innerRadius, points, color) {
     ctx.closePath();
     ctx.fill();
 }
+
 function drawHeart(x, y, size, color = "red") {
     ctx.fillStyle = color;
 
@@ -278,6 +284,8 @@ function drawHeart(x, y, size, color = "red") {
 
     ctx.fill();
 }
+
+
 function roundedRect(rc, x, y, w, h, r, options = {}) {
   const path = `
     M ${x + r} ${y}
@@ -294,6 +302,8 @@ function roundedRect(rc, x, y, w, h, r, options = {}) {
 
   return rc.path(path, options);
 }
+
+
 function redraw(){
 
         
@@ -311,6 +321,10 @@ function redraw(){
         // drawHeart(150, 100, 50, "red");
         // roundedRect(rc, 120, 15, 80, 80, 15, { fill: 'red' });
 }
+
+
+
+
 function RenderStrokes (){
   
      for(let item of state.strokes){
@@ -341,18 +355,14 @@ function RenderStrokes (){
         
 
 }
+
 function RenderShapes(){
      for(let item of state.Shapes){
       
             switch(item.typeShape){
                 case  "rectangle":{
 
-                 //  rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);
-                    ctx2.beginPath();
-                    ctx2.lineWidth = "4";
-                    // ctx2.strokeStyle = "red";
-                    ctx2.rect(item.points.x, item.points.y, item.points.width,item.points.height);
-                    ctx2.stroke();   
+                   rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);   
                    break
                 }
                 case "circle":{
@@ -369,6 +379,7 @@ function RenderShapes(){
 
  
 }
+
 function getCordWordPoint(e){
    const rect = e.currentTarget.getBoundingClientRect()
     return{
@@ -478,56 +489,16 @@ state.Shapes.push({
     
 
   }
-
-
-
-function  HandelShapesDectection(currx, curry, arrayOfStrokes) {
-
-
+function HandelShapesDectection(currx, curry, arrayOfStrokes) {
   return arrayOfStrokes.findIndex((item) => {
-
     if (item.type !== "Shape") return false;
 
     if (item.typeShape === "rectangle") {
-
-      console.log("x",currx,"y",curry ,"==>","left",item.points.x,"right",item.points.x+item.points.width,
-        "top",item.points.y,"bottom",item.points.y+item.points.height
-      )
-      
-      if(item.points.x>=currx && item.points.y>=curry){
-         return  currx>= item.points.x + item.points.width  && 
-                 currx<=item.points.x && 
-                 curry >=item.points.y + item.points.height  &&
-                 curry <= item.points.y  
-      }
-
-     
-      if(item.points.x>=currx ){
-    
-         return    currx>= item.points.x + item.points.width  
-                   && currx<=item.points.x  
-                   && curry >= item.points.y 
-                   && curry <= item.points.y + item.points.height 
-       
-      }
-
-      if(item.points.y>=curry ){
-    
-         return    currx>= item.points.x 
-                   && currx<=item.points.x  + item.points.width  
-                   && curry >=item.points.y + item.points.height 
-                   && curry <= item.points.y  
-       
-      }
-
-
-
-
       return (
-        currx >= item.points.x  &&
-        currx <= item.points.x + item.points.width  &&
-        curry >= item.points.y  &&
-        curry <= item.points.y + item.points.height 
+        currx >= item.points.x &&
+        currx <= item.points.x + item.points.width &&
+        curry >= item.points.y &&
+        curry <= item.points.y + item.points.height
       );
     }
 
@@ -540,20 +511,7 @@ function  HandelShapesDectection(currx, curry, arrayOfStrokes) {
 
     return false;
   });
-
 }
-
-
-  
-
-
-  
- 
- 
-
-
-
-
 function addRectangle(x,y,w,h,color){
     
   
@@ -569,6 +527,8 @@ function addRectangle(x,y,w,h,color){
    RenderShapes()
 
 }
+
+
 function addCircle(x,y,r){
 
     state.Shapes.push({
@@ -594,7 +554,6 @@ container.addEventListener("mousemove",(e)=>{
  
 
         const {CurrentX,CurrentY} = getCordWordPoint(e)
-        console.log(CurrentX,CurrentY)
  
         const {dx,dy}  = getOffsetDxDy(CurrentX,CurrentY)
 
@@ -604,9 +563,9 @@ container.addEventListener("mousemove",(e)=>{
         }  
         
          if(state.errasermode  && state.draw){
-             console.log({CurrentX,CurrentY})
-             container.style.cursor = 'url("./eraser.png") 32 32, auto' 
-             handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
+            console.log({CurrentX,CurrentY})
+          container.style.cursor = 'url("./eraser.png") 32 32, auto' 
+          handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
         
         }
    
@@ -617,7 +576,6 @@ container.addEventListener("mousemove",(e)=>{
             const EntiteMove = state.Shapes[state.currentEntite].points
             EntiteMove.x+=dx
             EntiteMove.y+=dy
-            
      
              
               
@@ -635,12 +593,10 @@ container.addEventListener("mousemove",(e)=>{
             const EntiteMove = state.Shapes[state.currentEntite]
         
             if(EntiteMove.typeShape === "rectangle"){
-                
+
                 EntiteMove.points.width+=dx
                 EntiteMove.points.height+=dy
             }
-
-
              if(EntiteMove.typeShape ==="circle"){
                   
                  
@@ -667,8 +623,7 @@ container.addEventListener("mousemove",(e)=>{
             RestartCanvas(ctx3,Layer3)
             
 
-            if(state.currentShapeType === "square"){ 
-                console.log(state.DefaultSizex,"<== default size x")
+            if(state.currentShapeType === "square"){ //  for check of the type 
                 state.DefaultSizex+=dx
                 state.DefaultSizey+=dy
                 rc3.rectangle(x,y,state.DefaultSizex, state.DefaultSizey); 
@@ -731,7 +686,7 @@ container.addEventListener("mousedown",(e)=>{
        
     
         const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
-        state.currentEntite = IndexEntite   
+        state.currentEntite = IndexEntite  // i did this for dynamic take the right index or -1 and in 
         console.log(IndexEntite)
 
       }
@@ -808,7 +763,7 @@ container.addEventListener("mousedown",(e)=>{
        
       vacuum()
      
-   console.log(state.Shapes)
+   
   })
 
 
@@ -842,8 +797,8 @@ Layer1.addEventListener("wheel", (e) => {
   
     document.getElementById("percentage").innerText = `${newZoom.toFixed(2)}%`
     // keep mouse fixed in world
-    Camera.x = mx - (wx * Camera.zoom)
-    Camera.y = my -( wy * Camera.zoom)
+    Camera.x = mx - wx * Camera.zoom
+    Camera.y = my - wy * Camera.zoom
   
     
     applyTransform()
@@ -993,10 +948,7 @@ observer.observe(container)
   state.SelectMode = true 
   state.errasermode = false
   state.isShapeCreationEnabled   = false 
-  // container.style.cursor = 'grab';
-    container.style.cursor = 'Default';
-  
-  
+  container.style.cursor = 'grab';
   
   })
   resetOptions.addEventListener("click",()=>{
