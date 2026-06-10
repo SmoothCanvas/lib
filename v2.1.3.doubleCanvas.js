@@ -1,5 +1,6 @@
 
-  import { Colors } from "./Colors.js"
+ 
+import { Colors } from "./Colors.js"
   import { Path } from "./Pathline.js"
   import { shortId } from "./utli.js"
 
@@ -30,6 +31,7 @@
   const downloadlink = document.getElementById("downloadlink")
   const circle = document.getElementById("circle")
   const square = document.getElementById("square")
+  const bb  = document.getElementById("bb")
 
 // point for caash this good idea you going to do it 
 // transalate this to svg
@@ -41,8 +43,8 @@
     oldx : 0 , 
     oldy : 0 ,
     sizeLine :8, 
-    colorline :"#000",
-    alpha :  0.183, 
+    colorline :"#000000",
+    alpha :  0.186, 
     dx :0 ,
     dy : 0 ,
     strokes  : [] , 
@@ -62,8 +64,16 @@
     isShapeCreationEnabled: false,
     currentShapeType: null,
     firstCordShapes : {x : 0 ,y : 0 },
-    DefaultSizex : 1,
-    DefaultSizey : 1
+    DefaultSizex : 50,
+    DefaultSizey : 50,
+    EdgesShapes : new Map(),
+
+    // start draw entite
+    StartCurveEntiteIndex : -1 ,
+    isStartCurve : false ,
+    startCurve : {x:0,y:0},
+    oldPointToCurve : {x:0,y:0},
+   
     
   }
 
@@ -246,6 +256,7 @@ function drawStar(cx, cy, outerRadius, innerRadius, points, color) {
     ctx.fill();
 }
 function drawHeart(x, y, size, color = "red") {
+  // here put int xt2 the hear 
     ctx.fillStyle = color;
 
     ctx.beginPath();
@@ -304,7 +315,7 @@ function redraw(){
       
         RenderStrokes()
         RenderShapes()
-         
+        
         // drawOctagon(400, 250, 50);  
         // drawPolygon(400, 150, 60, 3, "red");
         // drawStar(800, 350, 70, 35, 5, "gold");
@@ -341,36 +352,167 @@ function RenderStrokes (){
         
 
 }
+
+function PaintDrawCircle(ctx ,x,y,r){
+        ctx.beginPath();
+        ctx.arc(x,y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.lineWidth  =  2
+        ctx.fill();
+        ctx.stroke();
+}
+
+ 
+
+
+// function drawArrowEnd(startX, startY, endX, endY , ctx2) {
+//   const headLength = 13; // size of arrow
+
+//   // angle of the line
+//   const angle = Math.atan2(endY - startY, endX - startX);
+
+//   ctx2.beginPath();
+//   ctx2.moveTo(endX, endY);
+
+//   ctx2.lineTo(
+//     endX - headLength * Math.cos(angle - Math.PI / 6),
+//     endY - headLength * Math.sin(angle - Math.PI / 6)
+//   );
+
+//   ctx2.lineTo(
+//     endX - headLength * Math.cos(angle + Math.PI / 6),
+//     endY - headLength * Math.sin(angle + Math.PI / 6)
+//   );
+
+//   ctx2.closePath();
+//   ctx2.fillStyle = "black";
+//   ctx2.fill();
+//drawArrowEnd(((startX+endX)/2)+curve, ((startY+endY)/2)-curve, endX, endY ,ctx2);
+
+// }
+
+
+function DrawStraitghtCurveLine(startX , startY ,endX  ,  endY , valueOfCurves){
+
+  if(endX!=0 && endY!=0){
+     
+    let curve = valueOfCurves
+    ctx2.beginPath()
+    ctx2.lineWidth = 5;
+    ctx2.lineCap = "round";
+    ctx2.strokeStyle = "red"; 
+    ctx2.moveTo(startX,startY);
+    let cp1 = ((startX+endX)/2)+curve
+    let cp2= ((startY+endY)/2)-curve
+    ctx2.quadraticCurveTo(cp1, cp2, endX,endY)
+    ctx2.stroke();
+  }
+
+  
+
+}
+function CreateHtmlElement(x = 0, y = 0) {
+  const div = document.createElement("div");
+
+  div.classList.add("Point");
+  div.style.position = "absolute";
+  div.style.left = `${x}px`;
+  div.style.top = `${y}px`;
+  div.style.transform = `scale(${Camera.zoom})`;
+  
+  document.body.appendChild(div);
+
+  console.log(div);
+
+ 
+}
+ 
+  
+
+// sound of drad and drop
 function RenderShapes(){
-     for(let item of state.Shapes){
-      
+
+  state.Shapes.forEach((item,index)=>{
+
+
             switch(item.typeShape){
                 case  "rectangle":{
 
-                 //  rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);
-                    ctx2.beginPath();
-                    ctx2.lineWidth = "4";
-                    // ctx2.strokeStyle = "red";
-                    ctx2.rect(item.points.x, item.points.y, item.points.width,item.points.height);
-                    ctx2.stroke();   
-                   break
+               
+
+
+              PaintRectangle(ctx2,item.points.x,item.points.y,item.points.width,item.points.height   ,2,"black") 
+
+
+              DrawStraitghtCurveLine(
+                item.ConnectionBetweenShapes.top.from.startx,
+                item.ConnectionBetweenShapes.top.from.startY,
+                item.ConnectionBetweenShapes.top.to.endx,
+                item.ConnectionBetweenShapes.top.to.endy,
+                100)
+          
+              if(item.chosen){ 
+
+                      // PaintRectangle(ctx2,item.points.x-2,item.points.y-2,item.points.width+4,item.points.height+4 ,2,"#3859FF") 
+
+                      const middleTop =    (item.points.x+item.points.width) -(item.points.width)/2
+                      const middleBottom = item.points.y+item.points.height
+                      const middelHeight = (item.points.y+item.points.height)-(item.points.height)/2
+                      const middleRight  = (item.points.x+item.points.width)
+
+
+                      const marge  = 12
+                      let FinallyTop = item.points.height>0?item.points.y-marge :item.points.y+marge
+                      let FinallyBottom = item.points.height>0?middleBottom + marge:middleBottom -marge
+                      let FinallyLeft = item.points.width>0?item.points.x-marge :item.points.x+marge
+                      let FinallyRight =item.points.width>0?middleRight+marge : middleRight-marge
+                      
+                      // top and bottom
+                      PaintDrawCircle(ctx2,middleTop,FinallyTop,20)
+                  
+                      // PaintDrawCircle(ctx2,middleTop,FinallyBottom,20)
+                      // // left and right 
+                      // PaintDrawCircle(ctx2,FinallyLeft,middelHeight,20)
+                      // PaintDrawCircle(ctx2,FinallyRight,middelHeight,20)
+    
+                      state.EdgesShapes.set(`top-${index}`,   {index,x :middleTop,y:FinallyTop})
+                      // state.EdgesShapes.set(`bottom-${index}`,{index,x :middleTop,y:FinallyBottom})
+                      // state.EdgesShapes.set(`left-${index}` , {index,x :FinallyLeft,y:middelHeight})                                  
+                      // state.EdgesShapes.set(`right-${index}`, {index,x :FinallyRight,y:middelHeight})
+
+                    //  CreateHtmlElement(middleTop,FinallyTop)
+
+                      
+                    
                 }
-                case "circle":{
+             break
+      }
+                  case "circle":{
                   
                     ctx2.beginPath();
                     ctx2.arc(item.points.x, item.points.y, item.points.radius, 0, 2 * Math.PI);
+                
                     ctx2.stroke();
+                   
                     break
 
                 }
             }
-     
-    } 
+
+
+  })
+    
 
  
 }
+
+
+
+
+
 function getCordWordPoint(e){
    const rect = e.currentTarget.getBoundingClientRect()
+   //screnx =e.clientX-rect.left , screeny=(e.clientY-rect.top)-Camera.y)
     return{
       CurrentX :  ((e.clientX-rect.left)-Camera.x)/Camera.zoom , 
       CurrentY :  ((e.clientY-rect.top)-Camera.y)/Camera.zoom
@@ -409,6 +551,7 @@ const handleStrokeHitDetection = (curx,curry,arrayOfStrokes)=>{
 
              RestartCanvas(ctx,Layer1)
              RenderStrokes()
+             break
       
       
 
@@ -449,7 +592,7 @@ function addShapes(){
   id: shortId(6),
   
   type: "Shape",
-  isCurrentSelect  : false  ,
+  chosen  : false  ,
   points: { x: 500, y: 400, width: 200, height: 200, color: "green" },
   typeShape:"rectangle",
   view: true
@@ -460,7 +603,7 @@ function addShapes(){
 state.Shapes.push({
   id: shortId(6),
   type: "Shape",
-  isCurrentSelect  : false ,
+  chosen  : false ,
   points: { x: 700, y: 700, width: 120, height: 120, color: "red"  },
   typeShape:"rectangle",
   view: true
@@ -470,7 +613,7 @@ state.Shapes.push({
 state.Shapes.push({
   id: shortId(6),
   type: "Shape",
-  isCurrentSelect  : false ,
+  chosen  : false ,
   typeShape : "circle",
   points: { x: 860, y: 690,radius : 30, color: "blue"  },
   view: true
@@ -478,21 +621,31 @@ state.Shapes.push({
     
 
   }
-
-
-
+function PaintRectangle(ctx,x,y,w,h,lineWidth = 2 , color ="black"){
+  
+//  rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);
+//     ctx.fillStyle = "#87CEEB";
+   //   ctx.fillRect(x, y, w, h);
+     ctx.beginPath();
+     ctx.lineWidth = lineWidth;
+     ctx.strokeStyle = color;
+     ctx.rect(x,y,w,h);
+     ctx.stroke();
+     
+}
 function  HandelShapesDectection(currx, curry, arrayOfStrokes) {
 
-
-  return arrayOfStrokes.findIndex((item) => {
+  
+  return arrayOfStrokes.findLastIndex((item) => {
 
     if (item.type !== "Shape") return false;
+  
 
     if (item.typeShape === "rectangle") {
 
-      console.log("x",currx,"y",curry ,"==>","left",item.points.x,"right",item.points.x+item.points.width,
-        "top",item.points.y,"bottom",item.points.y+item.points.height
-      )
+      // console.log("x",currx,"y",curry ,"==>","left",item.points.x,"right",item.points.x+item.points.width,
+      //   "top",item.points.y,"bottom",item.points.y+item.points.height
+      // )
       
       if(item.points.x>=currx && item.points.y>=curry){
          return  currx>= item.points.x + item.points.width  && 
@@ -542,28 +695,24 @@ function  HandelShapesDectection(currx, curry, arrayOfStrokes) {
   });
 
 }
-
-
-  
-
-
-  
- 
- 
-
-
-
-
 function addRectangle(x,y,w,h,color){
-    
+     
   
     state.Shapes.push({
     id: shortId(6),
-    
     type: "Shape",
-    isCurrentSelect  : false  ,
-    points: { x: x, y: y, width: w, height: h, color: color},
+    chosen  : false  ,
+    points: { x: x, y: y, width: w, height: h, color: color || "black" },
     typeShape:"rectangle",
+    ConnectionBetweenShapes :{
+      top:{from : {startx:0 , startY :  0 }, to :{endx : 0 , endy: 0 } },
+      bottom:{from : {startx:0 , startY :  0 }, to :{endx : 0 , endy: 0 } },
+      left:{from : {startx:0 , startY :  0 }, to :{endx : 0 , endy: 0 } },
+      right:{from : {startx:0 , startY :  0 }, to :{endx : 0 , endy: 0 } },
+ 
+
+     },
+    INdexOfPatrner : [],
     view: true
     })
    RenderShapes()
@@ -574,7 +723,7 @@ function addCircle(x,y,r){
     state.Shapes.push({
     id: shortId(6),
     type: "Shape",
-    isCurrentSelect  : false ,
+    chosen  : false ,
     typeShape : "circle",
     points: { x: x, y: y,radius : r, color: "blue"  },
     view: true
@@ -583,10 +732,41 @@ function addCircle(x,y,r){
 RenderShapes()
 }
 
+function IsOverTheCircle(x,y,EdgesShapes){
+
+    for(let [key,value] of EdgesShapes){
+           
+          const dx = x - value.x;
+          const dy = y - value.y;
+
+          if(Math.sqrt(dx * dx + dy * dy) <=20){
+            return value.index
+          }
+
+
+        }
+
+        return -1
+}
+
+function oK(v){
+  return v!=-1
+}
+function HasFollow(array){
+  return array.length>0
+}
+
+const FollowLinkers = (ArrayOfLinkers,stateOfShapes,Currentx , Currenty  ,CurrentEntite , margin)=>{
+ //EntiteMove.height>0 ?EntiteMove.y-margin :EntiteMove.y+margin
+  ArrayOfLinkers.forEach((LinkId)=>{
+    stateOfShapes[LinkId].ConnectionBetweenShapes.top.to.endx = (CurrentEntite.points.x+CurrentEntite.points.width) - (CurrentEntite.points.width/2)
+    stateOfShapes[LinkId].ConnectionBetweenShapes.top.to.endy = CurrentEntite.points.height>0?CurrentEntite.points.y - margin  :  CurrentEntite.points.y+margin
+  })
+
+}
 //------------------------------------------------------------------------------------------------
 
  
-
 // ---------------------------------------------------Events---------------------------------------------
  
 container.addEventListener("mousemove",(e)=>{
@@ -594,32 +774,48 @@ container.addEventListener("mousemove",(e)=>{
  
 
         const {CurrentX,CurrentY} = getCordWordPoint(e)
-        console.log(CurrentX,CurrentY)
- 
         const {dx,dy}  = getOffsetDxDy(CurrentX,CurrentY)
 
+
+
         if(state.draw && !state.errasermode && !state.SelectMode  && !state.isShapeCreationEnabled){
+
+            //container.style.cursor = 'url("./controllers/b.png") 3 32, auto' 
             container.style.cursor = 'crosshair';
             Paint(CurrentX,CurrentY)
+
         }  
         
+
          if(state.errasermode  && state.draw){
              console.log({CurrentX,CurrentY})
              container.style.cursor = 'url("./eraser.png") 32 32, auto' 
              handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
         
         }
-   
+	   
+        
+        //  move item
          
-        if(!state.isShapeCreationEnabled &&  state.draw && state.SelectMode && state.currentEntite!=-1 && state.currentEntite!=undefined   && state.currentEntite !=null){
+        if(!state.isStartCurve &&!state.isShapeCreationEnabled &&  state.draw && state.SelectMode && state.currentEntite!=-1 && state.currentEntite!=undefined   && state.currentEntite !=null){
             
          
             const EntiteMove = state.Shapes[state.currentEntite].points
+            const AllEntiteMove =  state.Shapes[state.currentEntite]
+            const ExactConnectionShapesCord =  state.Shapes[state.currentEntite].ConnectionBetweenShapes
             EntiteMove.x+=dx
             EntiteMove.y+=dy
+            //Bézier curve
+            let margin = 12
+            ExactConnectionShapesCord.top.from.startx  = (EntiteMove.x+EntiteMove.width) -  (EntiteMove.width)/2 
+            ExactConnectionShapesCord.top.from.startY  = EntiteMove.height>0 ?EntiteMove.y-margin :EntiteMove.y+margin
             
-     
-             
+            if(HasFollow(AllEntiteMove.INdexOfPatrner)){
+              console.log("List of Fathers",AllEntiteMove.INdexOfPatrner)
+              FollowLinkers(AllEntiteMove.INdexOfPatrner ,state.Shapes ,CurrentX,CurrentY  , AllEntiteMove ,margin)
+            }
+            
+               
               
             RestartCanvas(ctx2,Layer2)  
             
@@ -631,13 +827,28 @@ container.addEventListener("mousemove",(e)=>{
     
         }
 
-        if(state.dragAspectIetms && state.currentEntite !=-1  && !state.isShapeCreationEnabled ){
+        if(!state.isStartCurve && state.dragAspectIetms && state.currentEntite !=-1  && !state.isShapeCreationEnabled ){
             const EntiteMove = state.Shapes[state.currentEntite]
-        
+            const ExactConnectionShapesCord =  state.Shapes[state.currentEntite].ConnectionBetweenShapes
+
             if(EntiteMove.typeShape === "rectangle"){
+            
                 
-                EntiteMove.points.width+=dx
-                EntiteMove.points.height+=dy
+               dx>0   ?   
+               container.style.cursor = 'nesw-resize'   :  
+               container.style.cursor = 'nw-resize' 
+
+
+               EntiteMove.points.width+=dx
+               EntiteMove.points.height+=dy
+               //Bézier curve
+               let margin = 12
+               ExactConnectionShapesCord.top.from.startx  = (EntiteMove.points.x+EntiteMove.points.width) -  (EntiteMove.points.width)/2 
+               ExactConnectionShapesCord.top.from.startY  = EntiteMove.points.height>0 ?EntiteMove.points.y-margin :EntiteMove.points.y+margin
+               RestartCanvas(ctx2,Layer2)  
+               RenderShapes()
+               
+              
             }
 
 
@@ -661,50 +872,74 @@ container.addEventListener("mousemove",(e)=>{
             SaveOldest.y = CurrentY
         }
          
-        
-        if(state.isShapeCreationEnabled && state.draw){
+        // creation shape
+        if(state.isShapeCreationEnabled && state.draw && !state.errasermode){
             let  {x,y}  = state.firstCordShapes
             RestartCanvas(ctx3,Layer3)
             
 
-            if(state.currentShapeType === "square"){ 
-                console.log(state.DefaultSizex,"<== default size x")
-                state.DefaultSizex+=dx
-                state.DefaultSizey+=dy
-                rc3.rectangle(x,y,state.DefaultSizex, state.DefaultSizey); 
-            }
-            
-
-           if(state.currentShapeType === "circle"){
+              if(state.currentShapeType === "square"){ 
                 
-                 state.DefaultSizex+=dx
-                 state.DefaultSizex  = Math.max(state.DefaultSizex , 20)
-                 ctx3.beginPath();
-                 ctx3.arc(x, y, state.DefaultSizex , 0, 2 * Math.PI);
-                 ctx3.stroke();
-             
-            }
-            
-            
-            
+                  state.DefaultSizex+=dx
+                  state.DefaultSizey+=dy
+                  PaintRectangle(ctx3,x,y,state.DefaultSizex, state.DefaultSizey,2,"black")
+                // rc3.rectangle(x,y,state.DefaultSizex, state.DefaultSizey); 
+              }
+              
+
+              if(state.currentShapeType === "circle"){
+                    
+                    state.DefaultSizex+=dx
+                    state.DefaultSizex  = Math.max(state.DefaultSizex , 20)
+                    ctx3.beginPath();
+                    ctx3.arc(x, y, state.DefaultSizex , 0, 2 * Math.PI);
+                    ctx3.stroke();
+                
+                }
+              
+              
+              
              
            
             SaveOldest.x  = CurrentX
             SaveOldest.y = CurrentY
         }
 
+
+        // start curve
+        
+        if(state.isStartCurve && state.draw){
+          const DistanceX = Math.abs(CurrentX - state.startCurve.x);
+      
+          const curve = Math.max(40, Math.min(150, DistanceX * 0.5));
+
+          RestartCanvas(ctx2,Layer2)
+         // DrawStraitghtCurveLine(state.startCurve.x,state.startCurve.y,CurrentX,CurrentY,curve)
+          
+          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.to.endx  = CurrentX
+          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.to.endy  = CurrentY
+
+          state.oldPointToCurve.x = CurrentX
+          state.oldPointToCurve.y = CurrentY
+
+       
+          
+          RenderShapes()
+        }
+        
+
   })
 
 
 
 
-
-
+ 
 
 
 container.addEventListener("mousedown",(e)=>{
  
       const {CurrentX,CurrentY} = getCordWordPoint(e)
+      console.log(CurrentX,CurrentY)
       SaveOldest.x  = CurrentX
       SaveOldest.y  = CurrentY
 
@@ -733,6 +968,12 @@ container.addEventListener("mousedown",(e)=>{
         const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
         state.currentEntite = IndexEntite   
         console.log(IndexEntite)
+        if(IndexEntite!=-1){
+          state.Shapes[IndexEntite].chosen = true 
+          RenderShapes()
+          container.style.cursor = 'grabbing'
+        }
+        
 
       }
 
@@ -740,30 +981,102 @@ container.addEventListener("mousedown",(e)=>{
         
         const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
         state.currentEntite = IndexEntite   
-        console.log("We catch new item",IndexEntite)
-        state.dragAspectIetms = true
-      
+        state.dragAspectIetms = true 
+        // console.log("We catch new item",IndexEntite)
+        
       }
 
       if(state.isShapeCreationEnabled){
-        console.log("we should save point")
+        
+        // console.log("we should save point")
         state.firstCordShapes.x  = CurrentX
         state.firstCordShapes.y  = CurrentY
       }
 
 
 
+       
+      // for hanel that small circle
+      
+   
+      if(state.SelectMode){
+           const IndexEntite2 = IsOverTheCircle( CurrentX, CurrentY, state.EdgesShapes )
+           
+           if(IndexEntite2!=-1){
 
+
+         
+            // from the top || bottom || right || left 
+         // store things like you wanna incrmeant to it and start for seconded point
+            state.Shapes[IndexEntite2].ConnectionBetweenShapes.top.from.startx  = CurrentX
+            state.Shapes[IndexEntite2].ConnectionBetweenShapes.top.from.startY  = CurrentY
+          
+
+             // and redraw all this in this case
+            state.startCurve.x = CurrentX
+            state.startCurve.y = CurrentY
+            state.isStartCurve = true
+            state.StartCurveEntiteIndex = IndexEntite2
+           }
+
+           
+           else{
+        
+            state.isStartCurve =false
+           }
+           
+        
+       
+      }
+
+  
  
     
   })
 
   container.addEventListener("mouseup",(e)=>{
+      const {CurrentX,CurrentY} = getCordWordPoint(e)
       
       state.draw = false
       state.cursormode = false   
       state.dragAspectIetms = false
-      // container.style.cursor = 'grab' 
+      if(state.SelectMode){
+        container.style.cursor = 'default' 
+      } 
+    
+      if(state.isStartCurve){
+     
+        const isInTopOfOtherSqaure  = IsOverTheCircle( CurrentX, CurrentY, state.EdgesShapes )
+        if(oK(isInTopOfOtherSqaure)){
+ 
+            state.Shapes[isInTopOfOtherSqaure].INdexOfPatrner.push(state.StartCurveEntiteIndex)
+            
+
+        }else{
+        
+          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.from.startx = 0
+          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.from.startY = 0
+          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.to.endx = 0
+          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.to.endy = 0
+          RestartCanvas(ctx2,Layer2)
+          RenderShapes()
+          console.log(state.Shapes)
+         }
+
+        //PaintDrawCircle(ctx2,state.oldPointToCurve.x,state.oldPointToCurve.y,20)
+           
+
+        
+      
+        state.isStartCurve = false
+        state.oldPointToCurve.x = 0
+        state.oldPointToCurve.y = 0
+      }
+  
+
+      
+       
+
 
      if(state.isShapeCreationEnabled){
        RestartCanvas(ctx3,Layer3)
@@ -784,8 +1097,8 @@ container.addEventListener("mousedown",(e)=>{
      }
 
 
-      state.DefaultSizex = 1
-      state.DefaultSizey  = 1 
+      state.DefaultSizex = 70
+      state.DefaultSizey  = 70
       state.firstCordShapes.x = 0 
       state.firstCordShapes.y = 0 
 
@@ -803,12 +1116,13 @@ container.addEventListener("mousedown",(e)=>{
   
       }
 
-  
+   
 
        
       vacuum()
      
-   console.log(state.Shapes)
+    console.log(state.Shapes)
+      
   })
 
 
@@ -863,7 +1177,7 @@ const observer = new ResizeObserver(() => {
  
     UpdateBoundries()
     redraw()
-
+    
 
   });
 
@@ -933,7 +1247,7 @@ observer.observe(container)
     state.colorline = "#000"
     state.sizeLine = 12
 
-    document.getElementById("percentage").innerText = `${0}%`
+    document.getElementById("percentage").innerText = `${1}%`
     document.getElementById("size-v").innerHTML = 12
     document.getElementById("smoothing-v").innerHTML = 0.186
     const slider = document.getElementById("size");
@@ -978,6 +1292,8 @@ observer.observe(container)
   })
   erraser.addEventListener("click",()=>{
     state.errasermode = true
+    state.SelectMode = false 
+    state.isShapeCreationEnabled = false
     container.style.cursor = 'url("./eraser.png") 32 32, auto';
         
           
@@ -993,8 +1309,8 @@ observer.observe(container)
   state.SelectMode = true 
   state.errasermode = false
   state.isShapeCreationEnabled   = false 
-  // container.style.cursor = 'grab';
-    container.style.cursor = 'Default';
+  //container.style.cursor = 'grab';
+  container.style.cursor = 'Default';
   
   
   
@@ -1039,7 +1355,21 @@ download.addEventListener("click",()=>{
 })
 
 
-
+bb.addEventListener("click",()=>{
+    const startX = 1045;
+  const startY = 576;
+   
+  const endX = 1368;
+  const endY = 827; 
+    DrawStraitghtCurveLine(startX,startY,endX,endY,150)
+})
     
 
 // addShapes()
+
+// louta
+
+document.getElementById("color").addEventListener("input",(e)=>{
+  console.log(e.target.value)
+  state.colorline = e.target.value
+})
