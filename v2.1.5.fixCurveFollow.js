@@ -469,7 +469,7 @@ function PaintDrawCircle(ctx ,x,y,r , color="red"){
         ctx.stroke();
 }
 function drawArrowEnd(startX, startY, endX, endY , ctx2) {
-  const headLength = 20; // size of arrow
+  const headLength =10; // size of arrow
 
   // angle of the line
   const angle = Math.atan2(endY - startY, endX - startX);
@@ -523,7 +523,7 @@ function RenderShapes(){
                
 
 
-              PaintRectangle(ctx2,item.points.x,item.points.y,item.points.width,item.points.height   ,2,"black") 
+              PaintRectangle(ctx2,item.points.x,item.points.y,item.points.width,item.points.height   ,2,"#3859FF") 
 
 
    
@@ -696,6 +696,46 @@ state.Shapes.push({
     
 
   }
+// function PaintRectangle(
+//   ctx,
+//   x,
+//   y,
+//   w,
+//   h,
+//   lineWidth = 2,
+//   color = "black",
+//   radius = 10
+// ) {
+
+//    //  rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);
+//    //     ctx.fillStyle = "#87CEEB";
+//    //   ctx.fillRect(x, y, w, h);
+
+
+//   ctx.beginPath();
+//   ctx.lineWidth = lineWidth;
+//   ctx.strokeStyle = color;
+
+//   ctx.moveTo(x + radius, y);
+//   ctx.lineTo(x + w - radius, y);
+//   ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+
+//   ctx.lineTo(x + w, y + h - radius);
+//   ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+
+//   ctx.lineTo(x + radius, y + h);
+//   ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+
+//   ctx.lineTo(x, y + radius);
+//   ctx.quadraticCurveTo(x, y, x + radius, y);
+
+//   ctx.closePath();
+//   ctx.stroke();
+// }
+
+
+
+
 function PaintRectangle(
   ctx,
   x,
@@ -703,35 +743,19 @@ function PaintRectangle(
   w,
   h,
   lineWidth = 2,
-  color = "black",
-  radius = 10
+  color = "black"
 ) {
-
-   //  rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);
-   //     ctx.fillStyle = "#87CEEB";
-   //   ctx.fillRect(x, y, w, h);
-
-
   ctx.beginPath();
   ctx.lineWidth = lineWidth;
   ctx.strokeStyle = color;
 
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + w - radius, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.rect(x, y, w, h);
 
-  ctx.lineTo(x + w, y + h - radius);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-
-  ctx.lineTo(x + radius, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-
-  ctx.closePath();
   ctx.stroke();
 }
+
+
+
 function  HandelShapesDectection(currx, curry, arrayOfStrokes) {
 
   
@@ -966,8 +990,8 @@ let drawPostions = (value , id) =>{
 
 
   
-          PaintDrawCircle(ctx4  , firstLine.x,firstLine.y, 5 ,"#58AAE2")
-          PaintDrawCircle(ctx4  ,cpx1,cpx2  , 5  ,"#76FA4E")
+          PaintDrawCircle(ctx4  , firstLine.x,firstLine.y, 4.4 ,"#58AAE2")
+          PaintDrawCircle(ctx4  ,cpx1,cpx2  , 4.4  ,"#76FA4E")
           PaintDrawCircle(ctx4  , endLine.x ,  endLine.y , 3 , "#58AAE2")
           drawArrowEnd(((firstLine.x+endLine.x)/2)+value.middle, ((firstLine.y+endLine.y)/2)-value.middle, endLine.x, endLine.y ,ctx4);
           
@@ -1240,12 +1264,18 @@ container.addEventListener("mousemove",(e)=>{
             state.startLove.middle
             )
 
-            PaintDrawCircle(ctx5  ,state.startLove.head.x ,state.startLove.head.y, 5)
-            PaintDrawCircle(ctx5  , state.startLove.tail.x,   state.startLove.tail.y , 5)
+            PaintDrawCircle(ctx5  ,state.startLove.head.x ,state.startLove.head.y, 4.4 , "#58AAE2")
+        
+            
             let curve = state.startLove.middle
             let cpx1  =  ((state.startLove.head.x +state.startLove.tail.x)/2)+(state.startLove.middle)/2
             let cpx2  = ( (state.startLove.head.y +state.startLove.tail.y)/2)-(state.startLove.middle)/2
-            PaintDrawCircle(ctx5  ,cpx1,cpx2  , 5  ,"green")
+            PaintDrawCircle(ctx5  ,cpx1,cpx2  , 5  ,"#76FA4E")
+
+            
+            // PaintDrawCircle(ctx5  , state.startLove.tail.x,   state.startLove.tail.y , 4.4)
+
+ 
 
 
 
@@ -1612,6 +1642,7 @@ container.addEventListener("mousedown",(e)=>{
 
         
        }
+       // in that case push multpile
  
        if(state.firstEdge==null && data.index!=-1 && data.index!=undefined && state.swapMode == false ){
   
