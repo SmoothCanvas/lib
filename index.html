@@ -29,7 +29,12 @@
 
      <canvas id="Layer3"  ></canvas>
 
-    
+     <canvas id="Layer4"  ></canvas>
+
+     <canvas id="Layer5"  ></canvas>
+
+     <canvas id="Layer6"  ></canvas>
+
   </div> 
  
 
@@ -48,7 +53,7 @@
     <div class="sp-section-title">Stroke</div>
     <div class="sp-row">
       <span class="sp-label" style="font-weight: bold;font-family:cursive;">Size</span>
-      <input type="range" id="size" min="1" max="400" value="8" step="1">
+      <input type="range" id="size" min="0.10" max="400" value="8" step="0.10">
       <span class="sp-val" id="size-v" style="font-weight: bold;font-family: cursive;">8</span>
     </div>
  
@@ -65,10 +70,13 @@
     <img id="erraser" src="./kaka.png" alt="erraser"/>
     <img id="pen" src="./controllers/b.png" alt="pen"/>
     <img id="SelectCursor" src="./controllers/cursor.png" alt="cursor"/>
+
+    
   </div>
   
   <br/>
   <div class="tools">
+    <img id="CreateCurveLine" src="horizontal-line.png" alt="curvy-line-loading"/>
     <img id="circle" src="./oval.png" alt="circle"/>
     <img id="square" src="./square.png" alt="square" />
  
@@ -124,7 +132,7 @@
 
 <div id="percentage">1%</div>
 
-<div id="version">V1.6.0 </div>
+<div id="version">V1.7.0 </div>
 
 <div id="version2">
  
@@ -137,7 +145,7 @@
  
 </div>
 
-  <script type="module" src="v2.1.3.doubleCanvas.js"></script>
+  <script type="module" src="v2.1.5.fixCurveFollow.js"></script>
     <script src="
 https://cdn.jsdelivr.net/npm/roughjs@4.6.6/bundled/rough.min.js
 "></script>

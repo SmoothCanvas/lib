@@ -32,12 +32,11 @@ import { Colors } from "./Colors.js"
   const circle = document.getElementById("circle")
   const square = document.getElementById("square")
   const bb  = document.getElementById("bb")
-  // const HiddenLayerForStroke =  ...
 
 // point for caash this good idea you going to do it 
 // transalate this to svg
 // ---------------------------------------------------State---------------------------------------------
-
+// upp
   let state = {
     draw : false , 
     points : [], 
@@ -65,8 +64,8 @@ import { Colors } from "./Colors.js"
     isShapeCreationEnabled: false,
     currentShapeType: null,
     firstCordShapes : {x : 0 ,y : 0 },
-    DefaultSizex : 50,
-    DefaultSizey : 50,
+    DefaultSizex : 100,
+    DefaultSizey : 100,
     EdgesShapes : new Map(),
 
     // start draw entite
@@ -74,14 +73,9 @@ import { Colors } from "./Colors.js"
     isStartCurve : false ,
     startCurve : {x:0,y:0},
     oldPointToCurve : {x:0,y:0},
-    // Blockachine
 
-    followEdges : new Map(),
-    NodesFollow : new Map(),
-    sequence : 0,
-    isTop   :  "tail"
-
-
+    // detective state
+    FollowState : new Map()
    
     
   }
@@ -440,7 +434,7 @@ function CreateHtmlElement(x = 0, y = 0) {
 
 // sound of drad and drop
 function RenderShapes(){
-// wiouy
+
   state.Shapes.forEach((item,index)=>{
 
 
@@ -459,12 +453,7 @@ function RenderShapes(){
                 item.ConnectionBetweenShapes.top.to.endx,
                 item.ConnectionBetweenShapes.top.to.endy,
                 100)
-          
-
-               ctx2.font = "20px  'Trebuchet MS', 'Segoe UI', sans-serif";
-               
-               ctx2.fillText(index,item.points.x,item.points.y);
-
+           // item.chosen
               if(true){ 
 
                       // PaintRectangle(ctx2,item.points.x-2,item.points.y-2,item.points.width+4,item.points.height+4 ,2,"#3859FF") 
@@ -808,7 +797,7 @@ container.addEventListener("mousemove",(e)=>{
              handleStrokeHitDetection(CurrentX,CurrentY,state.strokes)
         
         }
-	   
+       
         
         //  move item
          
@@ -938,16 +927,9 @@ container.addEventListener("mousemove",(e)=>{
 
           RestartCanvas(ctx2,Layer2)
          // DrawStraitghtCurveLine(state.startCurve.x,state.startCurve.y,CurrentX,CurrentY,curve)
-          console.log(state.isTop)
-          if(state.isTop ==="tail"){
+          
           state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.to.endx  = CurrentX
           state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.to.endy  = CurrentY
-          }else{
-          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.from.startx  = CurrentX
-          state.Shapes[state.StartCurveEntiteIndex].ConnectionBetweenShapes.top.from.startY  = CurrentY
-          }
-          
-
 
           state.oldPointToCurve.x = CurrentX
           state.oldPointToCurve.y = CurrentY
@@ -964,41 +946,10 @@ container.addEventListener("mousemove",(e)=>{
 
 
  
-const isTaken = (map,index)=>{
-  if(map.has(index)){
-    const arr = [...map.get(index)]
-
-    if(arr.length>0){
-      const lastItem = arr.pop()
-      return lastItem
-      
-    }
-
-  }
-
-  return null
-}
-
-const IsIncluding  = (arr,element)=>arr.some((item)=>item === element)
-
-const DetectRoot  = (Shapes   , CurrentEntiteIndex , FreindCurrentEntite )=>{
-   
-  const v1 = Shapes[CurrentEntiteIndex].INdexOfPatrner
-  const v2 = Shapes[FreindCurrentEntite].INdexOfPatrner
-
-  if(IsIncluding(v2,CurrentEntiteIndex)){
-    return CurrentEntiteIndex
-  }
-  if(IsIncluding(v1,FreindCurrentEntite)){
-    return FreindCurrentEntite
-  }
-
-}
 
 
 container.addEventListener("mousedown",(e)=>{
-      console.log("mousedown",state.NodesFollow )
- 
+ // work
       const {CurrentX,CurrentY} = getCordWordPoint(e)
      
       SaveOldest.x  = CurrentX
@@ -1030,7 +981,7 @@ container.addEventListener("mousedown",(e)=>{
         state.currentEntite = IndexEntite   
        
         if(IndexEntite!=-1){
-          console.log(IndexEntite,"<== this Select  noraml mode  item")
+          console.log(IndexEntite,"<== this Select  Normalle mode  item")
           state.Shapes[IndexEntite].chosen = true 
           RenderShapes()
           container.style.cursor = 'grabbing'
@@ -1044,13 +995,13 @@ container.addEventListener("mousedown",(e)=>{
         const IndexEntite =  HandelShapesDectection(CurrentX,CurrentY,state.Shapes)
         state.currentEntite = IndexEntite   
         state.dragAspectIetms = true 
-        // console.log("We catch new item",IndexEntite)
+       
         
       }
 
       if(state.isShapeCreationEnabled){
         
-        // console.log("we should save point")
+       
         state.firstCordShapes.x  = CurrentX
         state.firstCordShapes.y  = CurrentY
       }
@@ -1058,67 +1009,33 @@ container.addEventListener("mousedown",(e)=>{
 
 
        
-      // for hanel that small circle
+      // for Handel that small circle
       
    
       if(state.SelectMode){
-           const IndexEntite2 = IsOverTheCircle( CurrentX, CurrentY, state.EdgesShapes )
+           const IndexEntite2 = IsOverTheCircle( CurrentX, CurrentY, state.EdgesShapes)
            
            if(IndexEntite2!=-1){
 
-            console.log(IndexEntite2,"<== this current Entite by click  the red circle ")
 
-
-
-             if(isTaken(state.NodesFollow , IndexEntite2) !=null) {
-                
-             
-                const root =  DetectRoot(state.Shapes ,IndexEntite2 ,  isTaken(state.NodesFollow , IndexEntite2))
-                 state.isStartCurve = true
-                 state.StartCurveEntiteIndex = root
-                
-                if(root!= isTaken(state.NodesFollow , IndexEntite2)){
-                  console.log("update the start of the Entite ")
-                  state.isTop =  "head"
-                }else{  
-                  console.log("update the end of the Entite")
-                  state.isTop =  "tail"
-                }
-             
-            }
-             
-
-            else{
-
-
-
-           
-
-
+             console.log(IndexEntite2,"<== this current item by red circle")
+ 
            
  
             state.Shapes[IndexEntite2].ConnectionBetweenShapes.top.from.startx  = CurrentX
             state.Shapes[IndexEntite2].ConnectionBetweenShapes.top.from.startY  = CurrentY
           
 
-         
+             // and redraw all this in this case
             state.startCurve.x = CurrentX
             state.startCurve.y = CurrentY
             state.isStartCurve = true
             state.StartCurveEntiteIndex = IndexEntite2
-
-
-            }
-
-
-         
-
            }
 
            
            else{
-        
-            state.isStartCurve = false
+                  state.isStartCurve =false
            }
            
         
@@ -1129,26 +1046,6 @@ container.addEventListener("mousedown",(e)=>{
  
     
   })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   function isDuplicate(v,arr){
      
     for(let i = 0;i<arr.length;i++){
@@ -1159,64 +1056,77 @@ container.addEventListener("mousedown",(e)=>{
     return true
   }
 
-const  HasPrevNode = (mapNodes ,index) => mapNodes.has(index)?mapNodes.get(index) : -1
-const  StoreAllNodes  = (map , index1,index2) =>  {
-        map.get(index1).add(index2)
-        map.get(index2).add(index1)
+function ClearNodesEdges(index){
+          state.Shapes[index].ConnectionBetweenShapes.top.from.startx = 0
+          state.Shapes[index].ConnectionBetweenShapes.top.from.startY = 0
+          state.Shapes[index].ConnectionBetweenShapes.top.to.endx = 0
+          state.Shapes[index].ConnectionBetweenShapes.top.to.endy = 0
 }
+
+function ClearIndex(FatherIndex,indexOut){
+       state.FollowState.delete(FatherIndex)
+       state.FollowState.delete(indexOut)
+}
+
+function CleanUpNodes(FatherIndex , indexOut){
+       state.Shapes[FatherIndex].INdexOfPatrner = state.Shapes[FatherIndex].INdexOfPatrner.filter((id)=>id!=indexOut)
+       console.log("indexOut",indexOut,"FatherIndex",FatherIndex)
+   
+       // ClearNodesEdges(FatherIndex)
+       ClearIndex(FatherIndex ,indexOut )
  
+   
+   
+
+  }
+  function HasApartner(MapNodes,  indexEntite){
+     return MapNodes.has(indexEntite)
+  }
   container.addEventListener("mouseup",(e)=>{
+    //w2
       const {CurrentX,CurrentY} = getCordWordPoint(e)
       
       state.draw = false
       state.cursormode = false   
       state.dragAspectIetms = false
-
-
-
+      if(state.SelectMode){
+        container.style.cursor = 'default' 
+      } 
     
       if(state.isStartCurve){
      
         const isInTopOfOtherSqaure  = IsOverTheCircle( CurrentX, CurrentY, state.EdgesShapes )
-         // fetch here
+
+     
         if(oK(isInTopOfOtherSqaure) && (isInTopOfOtherSqaure!=state.StartCurveEntiteIndex)){
- 
-            
-          if(isDuplicate(state.StartCurveEntiteIndex , state.Shapes[isInTopOfOtherSqaure].INdexOfPatrner )!=-1){
-                  state.Shapes[isInTopOfOtherSqaure].INdexOfPatrner.push(state.StartCurveEntiteIndex)
-              
+
+         
+           if(HasApartner(state.FollowState,state.StartCurveEntiteIndex)){
+             const idPartner = state.FollowState.get(state.StartCurveEntiteIndex)
+             CleanUpNodes(idPartner ,state.StartCurveEntiteIndex )
+         
            }
-  
-            
-             
-            if(HasPrevNode(state.followEdges ,state.StartCurveEntiteIndex )!=-1){
-            
-              const prevNodesIndex = HasPrevNode(state.followEdges  ,state.StartCurveEntiteIndex)
-              state.Shapes[prevNodesIndex].INdexOfPatrner = state.Shapes[prevNodesIndex].INdexOfPatrner.filter((id)=>id!=state.StartCurveEntiteIndex )
-              // add again
-              // should be filter the freind  list freind i mean  from
-              if(isDuplicate(state.StartCurveEntiteIndex , state.Shapes[isInTopOfOtherSqaure].INdexOfPatrner )!=-1){
+          
+            state.FollowState.set(state.StartCurveEntiteIndex,isInTopOfOtherSqaure)
+        
+       
+       
+           if(isDuplicate(state.StartCurveEntiteIndex , state.Shapes[isInTopOfOtherSqaure].INdexOfPatrner )){
                   state.Shapes[isInTopOfOtherSqaure].INdexOfPatrner.push(state.StartCurveEntiteIndex)
-              }
-              // Do the good idea for
-
-
             }
-           
-            state.followEdges.set(state.StartCurveEntiteIndex,isInTopOfOtherSqaure)
-            StoreAllNodes(state.NodesFollow , state.StartCurveEntiteIndex, isInTopOfOtherSqaure)
-            
             
           
-            console.log( state.NodesFollow , "special array")
-                        
-        } 
 
+        }
+        else{
+          console.log(`Current entite ${state.StartCurveEntiteIndex} and Father have you and should remove from it is ${state.FollowState.get(state.StartCurveEntiteIndex)}`)
 
+           CleanUpNodes(state.FollowState.get(state.StartCurveEntiteIndex),state.StartCurveEntiteIndex)
+        }
+    
 
-
- 
- 
+        //PaintDrawCircle(ctx2,state.oldPointToCurve.x,state.oldPointToCurve.y,20)
+           
 
         
       
@@ -1236,10 +1146,7 @@ const  StoreAllNodes  = (map , index1,index2) =>  {
             case "square":{
                 
                 addRectangle(state.firstCordShapes.x,state.firstCordShapes.y,state.DefaultSizex,state.DefaultSizey)
-                state.NodesFollow.set(state.sequence,new Set())
-                state.sequence++
-            
-
+              
                 break
             }
             case "circle":{
@@ -1252,8 +1159,8 @@ const  StoreAllNodes  = (map , index1,index2) =>  {
      }
 
 
-      state.DefaultSizex = 70
-      state.DefaultSizey  = 70
+      state.DefaultSizex = 100
+      state.DefaultSizey  = 100
       state.firstCordShapes.x = 0 
       state.firstCordShapes.y = 0 
 
@@ -1270,22 +1177,13 @@ const  StoreAllNodes  = (map , index1,index2) =>  {
         
   
       }
-       
-      
+
+   
+
        
       vacuum()
-
-
-
-      if(state.SelectMode){
-        container.style.cursor = 'default' 
-      }
-
-
-
-      console.log("--------")
-      console.log(state.Shapes)
- 
+     
+    console.log(state.Shapes)
       
   })
 
