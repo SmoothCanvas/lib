@@ -227,6 +227,8 @@ function Paint(currentx,currenty  , mode  , ctx ){
               const y = state.oldy + (currenty  -state.oldy) *  state.alpha
               let midx = (state.oldx +x)/2
               let midy = (state.oldy+y)/2 
+
+              
             
 
               ctx.beginPath();
