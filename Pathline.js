@@ -15,6 +15,7 @@ export class Path {
 
 
     AddElement(array){
+     
         const element = this.undo.pop()
       
          if(element!=undefined){
@@ -25,6 +26,7 @@ export class Path {
         
     }
 
+    
     PushElementFromErraser(el){
 
         if(el!=undefined){

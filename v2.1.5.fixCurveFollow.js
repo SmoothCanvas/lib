@@ -235,6 +235,7 @@ function Paint(currentx,currenty  , mode  , ctx ){
               ctx.lineWidth = state.sizeLine;
               ctx.lineCap = "round";
               ctx.lineJoin = "round";
+              
               ctx.stroke();
 
               let x1 =  currentx  - state.oldx
@@ -247,7 +248,8 @@ function Paint(currentx,currenty  , mode  , ctx ){
        
                 
                   
-              state.points.push({x :x , y : y , color : state.colorline , size :  state.sizeLine  })
+              state.points.push({x :x , y : y , 
+                color : state.colorline , size :  state.sizeLine  })
               state.oldx = x  
               state.oldy = y
 
@@ -432,27 +434,39 @@ function redraw(){
 function RenderStrokes (){
   
      for(let item of state.strokes){
-       
+
+
+              ctx.beginPath();
+              ctx.moveTo(item.points[0].x ,item.points[0].y);
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+
+
 
          if(item.view){
-         for(let i =1 ;i<item.points.length;i++){
-              const prev = item.points[i-1]
-              const curr  = item.points[i]
-              ctx.beginPath();
-              ctx.moveTo(prev.x, prev.y);
-              ctx.quadraticCurveTo((prev.x+curr.x)/2, (prev.y+curr.y)/2, curr.x, curr.y)
+
+         for(let i =0 ;i<item.points.length-1;i++){
+              let midx =( item.points[i].x+ item.points[i+1].x)/2
+              let midy = ( item.points[i].y+ item.points[i+1].y)/2
+              
+               
+           
+              ctx.quadraticCurveTo(item.points[i].x,
+                item.points[i].y ,
+                midx,
+                midy
+              )
             
               ctx.strokeStyle= item.points[i].color;
               ctx.lineWidth = item.points[i].size;
-              ctx.lineCap = "round";
-              ctx.lineJoin = "round";
-              ctx.stroke();
+        
+             
           }
 
          }
          
-
-        
+        ctx.stroke();
+                
         
         }
 
@@ -523,14 +537,14 @@ function RenderShapes(){
                
 
 
-              PaintRectangle(ctx2,item.points.x,item.points.y,item.points.width,item.points.height   ,2,"#3859FF") 
+              PaintRectangle(ctx2,item.points.x,item.points.y,item.points.width,item.points.height   ,2,"#121212") 
 
 
    
           
 
 
-
+                // render the shapes here
               if(true){ 
              // top (  (item.points.x+item.points.width) -(item.points.width)/2 , item.point.y)
             // right ((item.points.x+item.points.width) ,  (item.points.y+item.points.height)-(item.points.height)/2)
@@ -707,11 +721,9 @@ state.Shapes.push({
 //   radius = 10
 // ) {
 
-//    //  rc2.rectangle(item.points.x, item.points.y, item.points.width,item.points.height);
-//    //     ctx.fillStyle = "#87CEEB";
-//    //   ctx.fillRect(x, y, w, h);
 
 
+    
 //   ctx.beginPath();
 //   ctx.lineWidth = lineWidth;
 //   ctx.strokeStyle = color;
@@ -731,6 +743,10 @@ state.Shapes.push({
 
 //   ctx.closePath();
 //   ctx.stroke();
+
+
+
+
 // }
 
 
@@ -746,11 +762,12 @@ function PaintRectangle(
   color = "black"
 ) {
   ctx.beginPath();
+  // ctx.fillStyle = "#5AC4F6";
   ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = color;
-
+  // ctx.strokeStyle = color;
+  
   ctx.rect(x, y, w, h);
-
+  //ctx.fill();  
   ctx.stroke();
 }
 
@@ -926,11 +943,6 @@ function addNewCurve(){
 
 
 
- 
-
-
-
-
 /**
  * Adds two numbers.
  * @param {cx} a - First string
@@ -956,8 +968,6 @@ let isInCurrentPosition = (map , currentx , currenty ) => {
   return -1
  
 }
-
-
 let SeeBezier = (a,b,c,d)=> { 
     ctx4.beginPath();
  
@@ -970,8 +980,6 @@ let SeeBezier = (a,b,c,d)=> {
   // Stroke it (Do the Drawing)
     ctx4.stroke()
 }
-
-
 let drawPostions = (value , id) =>{
 
 
@@ -1002,6 +1010,18 @@ let drawPostions = (value , id) =>{
           ctx4.font = " 20px  'Trebuchet MS', 'Segoe UI', sans-serif";
           ctx4.fillText(id, cpx1+5,cpx2-5);
 
+
+
+              
+          ctx4.fillStyle   = "red"
+          ctx4.font = " 15px  'Trebuchet MS', 'Segoe UI', sans-serif";
+          ctx4.fillText(`(${value.head.x} ,${value.head.y})`,firstLine.x,firstLine.y);
+
+          ctx4.fillStyle   = "red"
+          ctx4.font = " 15px  'Trebuchet MS', 'Segoe UI', sans-serif";
+          ctx4.fillText(`(${value.tail.x} ,${value.tail.y})`,endLine.x,endLine.y);
+
+
           state.CashLines.set(`head-${id}`,   {id,x : firstLine.x,y : firstLine.y ,pos : "head" })
           state.CashLines.set(`tail-${id}`,   {id,x :  endLine.x,y : endLine.y  , pos : "tail" })
           state.CashLines.set(`middle-${id}`,   {id,x : cpx1 ,y :cpx2  , pos : "middle"})
@@ -1014,12 +1034,11 @@ let drawPostions = (value , id) =>{
 
   }
 
+  
+
 
 
 }
-
- 
-
 let followLinkers = (ListOfLinkers , pos , p ) =>{
  
  ListOfLinkers.forEach(id =>{
@@ -1030,10 +1049,50 @@ let followLinkers = (ListOfLinkers , pos , p ) =>{
  })
 
 }
-
 let Ok = (index) =>{
   return index!=-1 && index!=undefined
 }
+
+ 
+
+
+/**
+ * Adds two numbers.
+ * @param {x} x - First string
+ * @param {y} y - Second string
+ * @returns {string}  L-n   exmple L0 L1 l2 
+ */
+
+
+
+let RecognizeLine = (x ,y ) =>{
+  console.log({x,y})
+
+  // const ListOfCurves  =  state.ConnectionCurves 
+ 
+  // for(let [key  , value] of ListOfCurves){
+   
+  //   const {head , tail }  = value 
+
+  //     if (x >= value.head.x && x <= value.tail.x) {
+  //         console.log("we match", key);
+
+  //         PaintRectangle(
+  //             ctx4,
+  //             value.head.x,
+  //             value.head.y,
+  //             value.tail.x -  value.head.x,
+  //             value.tail.y-value.head.y , 
+  //             2,
+  //             "red"
+  //         );
+  //     }
+  // }
+ 
+}
+
+
+
 
  
 //------------------------------------------------------------------------------------------------
@@ -1083,7 +1142,15 @@ container.addEventListener("mousemove",(e)=>{
         
         }
         //  move item
-        if(!state.isStartCreationLine &&!state.isShapeCreationEnabled &&  state.draw && state.SelectMode && state.currentEntite!=-1 && state.currentEntite!=undefined   && state.currentEntite !=null){
+        if(
+           !state.isStartCreationLine && 
+           !state.isShapeCreationEnabled &&  
+            state.draw && state.SelectMode && 
+            state.currentEntite!=-1 && 
+            state.currentEntite!=undefined  && 
+            state.currentEntite !=null
+          ){
+
             
          
             const EntiteMove = state.Shapes[state.currentEntite].points
@@ -1091,6 +1158,10 @@ container.addEventListener("mousemove",(e)=>{
            
             EntiteMove.x+=dx
             EntiteMove.y+=dy
+
+
+
+
             //Bézier curve
 
             const response = state.register.has(state.currentEntite)
@@ -1349,7 +1420,7 @@ container.addEventListener("mousedown",(e)=>{
 
 
           
-          // console.log(IndexEntite,"<== this Select  normalle mode  item")
+          console.log(IndexEntite,"<== this Select  normalle mode  item")
           // state.Shapes[IndexEntite].chosen = true 
           // RenderShapes()
           container.style.cursor = 'grabbing'
@@ -1357,6 +1428,10 @@ container.addEventListener("mousedown",(e)=>{
 
 
     
+        }else{
+
+          RecognizeLine(CurrentX ,CurrentY)
+          console.log("not detect any thing" , IndexEntite)
         }
         
 
@@ -1474,7 +1549,10 @@ container.addEventListener("mousedown",(e)=>{
 
          
 
-           }else{
+           }
+           
+           else{
+
 
 
 
@@ -1498,7 +1576,14 @@ container.addEventListener("mousedown",(e)=>{
               
               }
 
+
+
+
+
+
            }
+
+
 
     
            
@@ -1875,14 +1960,16 @@ container.addEventListener("contextmenu",(e)=>{
   })
 
 
-Layer1.addEventListener("wheel", (e) => {
+
+  
+Layer3.addEventListener("wheel", (e) => {
     e.preventDefault()
 
     const zoomSpeed = 0.001
     
     const newZoom = Math.max(0.1, Camera.zoom + -e.deltaY * zoomSpeed)
 
-    const rect = Layer1.getBoundingClientRect()
+    const rect = Layer3.getBoundingClientRect()
 
     // mouse in screen space
     const mx = e.clientX - rect.left
@@ -1911,6 +1998,9 @@ Layer1.addEventListener("wheel", (e) => {
 
   
 
+
+
+  
 
 
   // ---------------------------------------------------Events---------------------------------------------
@@ -2036,6 +2126,17 @@ observer.observe(container)
       redraw()
     
     }
+
+
+    if(ev.key ==="&"){
+    
+    state.isShapeCreationEnabled = false 
+    state.SelectMode =  true 
+    state.errasermode = false 
+    state.dragMode  = false
+    state.isStartCreationLine = false
+    }
+
     
   })
   erraser.addEventListener("click",()=>{
