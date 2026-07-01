@@ -225,11 +225,13 @@ function Paint(currentx,currenty  , mode  , ctx ){
     case  "insert" : 
               const x = state.oldx + (currentx  -state.oldx) * state.alpha
               const y = state.oldy + (currenty  -state.oldy) *  state.alpha
+              let midx = (state.oldx +x)/2
+              let midy = (state.oldy+y)/2 
             
 
               ctx.beginPath();
               ctx.moveTo(state.oldx, state.oldy);
-              ctx.quadraticCurveTo((state.oldx+x)/2, (state.oldy+y)/2, x, y)
+              ctx.quadraticCurveTo(x,y, midx, midy)
             
               ctx.strokeStyle = state.colorline;
               ctx.lineWidth = state.sizeLine;
